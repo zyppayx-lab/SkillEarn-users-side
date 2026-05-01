@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - SkillEarn</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f9ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background: white;
+  padding: 25px;
+  width: 320px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+h2 { text-align:center; color:#0a66ff; }
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  background: #0a66ff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.loader {
+  display:none;
+  text-align:center;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Register</h2>
+
+  <input id="name" placeholder="Full Name">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <select id="country"></select>
+
+  <button onclick="register()">Register</button>
+
+  <div class="loader" id="loader">Loading...</div>
+
+  <p id="msg"></p>
+
+  <p>Already have account? <a href="login.html">Login</a></p>
+</div>
+
+<script>
+const API_BASE = "https://skillearn.onrender.com";
+
+/* 🌍 COUNTRIES (name + currency) */
+const countries = [
+  {name:"Nigeria", code:"NGN"},
+  {name:"United States", code:"USD"},
+  {name:"United Kingdom", code:"GBP"},
+  {name:"Canada", code:"CAD"},
+  {name:"Germany", code:"EUR"},
+  {name:"France", code:"EUR"},
+  {name:"Netherlands", code:"EUR"},
+  {name:"India", code:"INR"},
+  {name:"China", code:"CNY"},
+  {name:"Brazil", code:"BRL"},
+  {name:"South Africa", code:"ZAR"},
+  {name:"Ghana", code:"GHS"},
+  {name:"Kenya", code:"KES"},
+  {name:"Australia", code:"AUD"},
+  {name:"UAE", code:"AED"},
+  {name:"Japan", code:"JPY"},
+  {name:"Mexico", code:"MXN"},
+  {name:"Turkey", code:"TRY"},
+  {name:"Indonesia", code:"IDR"},
+  {name:"Pakistan", code:"PKR"}
+];
+
+/* populate dropdown */
+const select = document.getElementById("country");
+countries.forEach(c=>{
+  const opt = document.createElement("option");
+  opt.value = c.name;
+  opt.textContent = `${c.name} (${c.code})`;
+  select.appendChild(opt);
+});
+
+/* REGISTER */
+async function register() {
+  const loader = document.getElementById("loader");
+  const msg = document.getElementById("msg");
+
+  loader.style.display = "block";
+  msg.innerText = "";
+
+  try {
+    const res = await fetch(API_BASE + "/api/auth/register", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        name: name.value,
+        email: email.value,
+        password: password.value,
+        country: country.value
+      })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok) throw new Error(data.message);
+
+    msg.innerText = "OTP sent! Redirecting...";
+    localStorage.setItem("email", email.value);
+
+    setTimeout(()=>{
+      window.location.href = "verify.html";
+    },1500);
+
+  } catch(err){
+    msg.innerText = err.message;
+  }
+
+  loader.style.display = "none";
+}
+</script>
+
+</body>
+</html>

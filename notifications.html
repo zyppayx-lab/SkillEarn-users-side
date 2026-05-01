@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<title>Notifications</title>
+</head>
+
+<body>
+
+<h2 class="title">Notifications</h2>
+
+<div id="list"></div>
+
+<div class="nav">
+  <button onclick="nav('dashboard')">Home</button>
+  <button onclick="nav('jobs')">Jobs</button>
+  <button class="active">Notifications</button>
+  <button onclick="nav('profile')">Profile</button>
+</div>
+
+<script src="../js/core.js"></script>
+
+<script>
+async function load() {
+  const data = await apiRequest("/api/users/notifications");
+
+  document.getElementById("list").innerHTML =
+    data.map(n => `
+      <div class="card">
+        <p>${n.message}</p>
+      </div>
+    `).join("");
+}
+
+function nav(p){
+  window.location.href = p + ".html";
+}
+
+load();
+</script>
+
+</body>
+</html>

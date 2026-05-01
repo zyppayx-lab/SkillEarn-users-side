@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<title>Withdraw</title>
+</head>
+
+<body>
+
+<h2 class="title">Withdraw</h2>
+
+<div class="card">
+
+  <input id="amount" type="number" placeholder="Amount">
+
+  <!-- BANK SECTION -->
+  <div id="bankSection">
+    <input id="bank" placeholder="Bank Name">
+    <input id="accNum" placeholder="Account Number">
+    <input id="accName" placeholder="Account Name">
+  </div>
+
+  <!-- CRYPTO SECTION -->
+  <div id="cryptoSection">
+    <input id="crypto" placeholder="Crypto Address">
+
+    <select id="network" onchange="updatePlaceholder()">
+      <option value="">Select Network</option>
+      <option value="USDT_TRC20">USDT (TRC20)</option>
+      <option value="USDT_ERC20">USDT (ERC20)</option>
+      <option value="USDT_BEP20">USDT (BEP20)</option>
+      <option value="BTC">Bitcoin (BTC)</option>
+      <option value="ETH">Ethereum (ETH)</option>
+      <option value="BNB">Binance Coin (BNB)</option>
+      <option value="SOL">Solana (SOL)</option>
+      <option value="LTC">Litecoin (LTC)</option>
+    </select>
+  </div>
+
+  <button onclick="withdraw(this)" class="primary-btn">Withdraw</button>
+
+</div>
+
+<script src="../js/core.js"></script>
+
+<script>
+const user = getUser();
+
+/* =========================
+   COUNTRY SWITCH
+========================= */
+if (user.country !== "NG") {
+  document.getElementById("bankSection").style.display = "none";
+} else {
+  document.getElementById("cryptoSection").style.display = "none";
+}
+
+/* =========================
+   UX IMPROVEMENT
+========================= */
+function updatePlaceholder(){
+  const network = document.getElementById("network").value;
+  const input = document.getElementById("crypto");
+
+  if(network.includes("TRC20")){
+    input.placeholder = "Enter TRC20 wallet address";
+  } else if(network.includes("ERC20")){
+    input.placeholder = "Enter ERC20 wallet address";
+  } else if(network.includes("BEP20")){
+    input.placeholder = "Enter BEP20 wallet address";
+  } else if(network === "BTC"){
+    input.placeholder = "Enter Bitcoin address";
+  } else if(network === "ETH"){
+    input.placeholder = "Enter Ethereum address";
+  } else {
+    input.placeholder = "Crypto Address";
+  }
+}
+
+/* =========================
+   WITHDRAW
+========================= */
+async function withdraw(btn){
+  showLoader(btn);
+
+  try {
+
+    const amountVal = Number(amount.value);
+
+    if (!amountVal || amountVal <= 0) {
+      throw new Error("Enter valid amount");
+    }
+
+    // Crypto validation
+    if (user.country !== "NG") {
+      if (!crypto.value || !network.value) {
+        throw new Error("Enter crypto address and select network");
+      }
+    }
+
+    // Bank validation
+    if (user.country === "NG") {
+      if (!bank.value || !accNum.value || !accName.value) {
+        throw new Error("Fill all bank details");
+      }
+    }
+
+    await apiRequest("/api/users/withdraw","POST",{
+      amount: amountVal,
+      bank_name: bank.value,
+      account_number: accNum.value,
+      account_name: accName.value,
+      crypto_address: crypto.value,
+      crypto_network: network.value
+    });
+
+    alert("Withdrawal submitted successfully");
+
+  } catch(e){
+    alert(e.message);
+  }
+
+  hideLoader(btn);
+}
+</script>
+
+</body>
+</html>

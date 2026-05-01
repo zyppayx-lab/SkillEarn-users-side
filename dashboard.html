@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<title>Dashboard</title>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>Dashboard</h2>
+  <div id="balance" class="balance">Loading...</div>
+</div>
+
+<div class="card center">
+  <button onclick="goWithdraw()" class="primary-btn">Withdraw</button>
+</div>
+
+<div class="card">
+  <button onclick="goJobs()">View Jobs</button>
+  <button onclick="nav('notifications')">Notifications</button>
+</div>
+
+<div class="nav">
+  <button onclick="nav('dashboard')" class="active">Home</button>
+  <button onclick="nav('jobs')">Jobs</button>
+  <button onclick="nav('notifications')">Notifications</button>
+  <button onclick="nav('profile')">Profile</button>
+</div>
+
+<script src="../js/core.js"></script>
+
+<script>
+async function loadDashboard() {
+  try {
+    const data = await apiRequest("/api/users/wallet");
+    const symbol = currencySymbol(data.currency);
+
+    document.getElementById("balance").innerText =
+      symbol + " " + data.balance.toFixed(2);
+
+  } catch (e) {
+    document.getElementById("balance").innerText = "Error loading";
+  }
+}
+
+function nav(page){
+  window.location.href = page + ".html";
+}
+
+function goWithdraw(){
+  window.location.href = "withdraw.html";
+}
+
+function goJobs(){
+  window.location.href = "jobs.html";
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

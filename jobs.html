@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<title>Jobs</title>
+</head>
+
+<body>
+
+<h2 class="title">Available Jobs</h2>
+
+<div id="jobs"></div>
+
+<div class="nav">
+  <button onclick="nav('dashboard')">Home</button>
+  <button class="active">Jobs</button>
+  <button onclick="nav('notifications')">Notifications</button>
+  <button onclick="nav('profile')">Profile</button>
+</div>
+
+<script src="../js/core.js"></script>
+
+<script>
+let submittedTasks = JSON.parse(localStorage.getItem("submitted") || "[]");
+
+async function loadJobs() {
+  const jobs = await apiRequest("/api/users/tasks");
+
+  const container = document.getElementById("jobs");
+  container.innerHTML = "";
+
+  jobs.forEach(job => {
+    const disabled = submittedTasks.includes(job.id);
+
+    container.innerHTML += `
+      <div class="card">
+        <h3>${job.title}</h3>
+        <p>Reward: ${job.reward}</p>
+
+        <input type="text" placeholder="Proof text" id="proof-${job.id}">
+        <input type="file" id="file-${job.id}">
+
+        <button ${disabled ? "disabled" : ""} onclick="submit(${job.id}, this)">
+          ${disabled ? "Submitted" : "Submit"}
+        </button>
+      </div>
+    `;
+  });
+}
+
+async function submit(taskId, btn) {
+  showLoader(btn);
+
+  try {
+    const form = new FormData();
+    form.append("task_id", taskId);
+    form.append("proof_text", document.getElementById(`proof-${taskId}`).value);
+
+    const file = document.getElementById(`file-${taskId}`).files[0];
+    if (file) form.append("screenshot", file);
+
+    const token = localStorage.getItem("token");
+
+    await fetch(API_BASE + "/api/submissions/create", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token
+      },
+      body: form
+    });
+
+    submittedTasks.push(taskId);
+    localStorage.setItem("submitted", JSON.stringify(submittedTasks));
+
+    btn.innerText = "Submitted";
+    btn.disabled = true;
+
+  } catch(e){
+    alert("Submission failed");
+    hideLoader(btn);
+  }
+}
+
+function nav(page){
+  window.location.href = page + ".html";
+}
+
+loadJobs();
+</script>
+
+</body>
+</html>

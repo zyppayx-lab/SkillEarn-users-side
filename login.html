@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f5f9ff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.box {
+  background:white;
+  padding:20px;
+  width:300px;
+  border-radius:10px;
+}
+button {
+  background:#0a66ff;
+  color:white;
+  padding:10px;
+  border:none;
+  width:100%;
+}
+.loader { display:none; text-align:center; }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h3>Login</h3>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <div class="loader" id="loader">Loading...</div>
+  <p id="msg"></p>
+
+  <p>No account? <a href="register.html">Register</a></p>
+</div>
+
+<script>
+const API_BASE = "https://skillearn.onrender.com";
+
+function saveAuth(data) {
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+}
+
+async function login() {
+  const loader = document.getElementById("loader");
+  const msg = document.getElementById("msg");
+
+  loader.style.display = "block";
+
+  try {
+    const res = await fetch(API_BASE + "/api/auth/login", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.message);
+
+    saveAuth(data);
+
+    msg.innerText = "Login successful";
+
+    setTimeout(()=>{
+      window.location.href = "user/dashboard.html";
+    },1000);
+
+  } catch(err){
+    msg.innerText = err.message;
+  }
+
+  loader.style.display = "none";
+}
+</script>
+
+</body>
+</html>

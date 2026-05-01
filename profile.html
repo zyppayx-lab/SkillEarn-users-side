@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<title>Profile</title>
+</head>
+
+<body>
+
+<div class="card center">
+  <h3 id="name"></h3>
+  <p id="email"></p>
+  <p id="country"></p>
+
+  <button onclick="logout()" class="danger-btn">Logout</button>
+</div>
+
+<div class="nav">
+  <button onclick="nav('dashboard')">Home</button>
+  <button onclick="nav('jobs')">Jobs</button>
+  <button onclick="nav('notifications')">Notifications</button>
+  <button class="active">Profile</button>
+</div>
+
+<script src="../js/core.js"></script>
+
+<script>
+const user = getUser();
+
+name.innerText = user.name;
+email.innerText = user.email;
+country.innerText = "Country: " + user.country;
+
+function logout(){
+  localStorage.clear();
+  window.location.href = "../login.html";
+}
+
+function nav(p){
+  window.location.href = p + ".html";
+}
+</script>
+
+</body>
+</html>
