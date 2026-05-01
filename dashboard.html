@@ -1,64 +1,464 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/style.css">
-<title>Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<div class="header">
-  <h2>Dashboard</h2>
-  <div id="balance" class="balance">Loading...</div>
+<body class="bg-slate-100 pb-24">
+
+<div id="screen"></div>
+
+
+
+<!-- BOTTOM NAV -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
+
+    <div class="grid grid-cols-4 text-center">
+
+        <button
+            class="p-4 text-blue-600 font-bold"
+        >
+            Dashboard
+        </button>
+
+
+
+        <button
+            id="navJobs"
+            onclick="goJobs()"
+            class="p-4"
+        >
+            Jobs
+        </button>
+
+
+
+        <button
+            id="navNotifications"
+            onclick="goNotifications()"
+            class="p-4"
+        >
+            Notifications
+        </button>
+
+
+
+        <button
+            id="navProfile"
+            onclick="goProfile()"
+            class="p-4"
+        >
+            Profile
+        </button>
+
+    </div>
+
 </div>
 
-<div class="card center">
-  <button onclick="goWithdraw()" class="primary-btn">Withdraw</button>
-</div>
 
-<div class="card">
-  <button onclick="goJobs()">View Jobs</button>
-  <button onclick="nav('notifications')">Notifications</button>
-</div>
 
-<div class="nav">
-  <button onclick="nav('dashboard')" class="active">Home</button>
-  <button onclick="nav('jobs')">Jobs</button>
-  <button onclick="nav('notifications')">Notifications</button>
-  <button onclick="nav('profile')">Profile</button>
-</div>
-
-<script src="../js/core.js"></script>
 
 <script>
-async function loadDashboard() {
-  try {
-    const data = await apiRequest("/api/users/wallet");
-    const symbol = currencySymbol(data.currency);
 
-    document.getElementById("balance").innerText =
-      symbol + " " + data.balance.toFixed(2);
+const API =
+"https://skillearn.onrender.com";
 
-  } catch (e) {
-    document.getElementById("balance").innerText = "Error loading";
-  }
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+
+if(!token){
+
+    window.location=
+    "login.html";
+
 }
 
-function nav(page){
-  window.location.href = page + ".html";
-}
 
-function goWithdraw(){
-  window.location.href = "withdraw.html";
-}
 
-function goJobs(){
-  window.location.href = "jobs.html";
-}
 
 loadDashboard();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+async function loadDashboard(){
+
+    loader();
+
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+"/api/users/dashboard",
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+token
+                }
+
+            }
+        );
+
+
+
+        const data =
+        await res.json();
+
+
+
+
+        screen.innerHTML=`
+
+            <div class="
+                p-4
+                max-w-6xl
+                mx-auto
+            ">
+
+
+
+                <!-- WALLET -->
+                <div class="
+                    bg-blue-600
+                    text-white
+                    rounded-3xl
+                    p-8
+                    text-center
+                    mb-5
+                ">
+
+                    <p class="
+                        text-sm
+                        opacity-80
+                        mb-2
+                    ">
+                        Wallet Balance
+                    </p>
+
+
+
+                    <h2 class="
+                        text-4xl
+                        font-bold
+                        mb-2
+                    ">
+
+                        ${data.profile.balance}
+
+                    </h2>
+
+
+
+                    <p class="
+                        opacity-90
+                    ">
+
+                        ${data.profile.name}
+
+                    </p>
+
+                </div>
+
+
+
+
+                <!-- SHORTCUTS -->
+                <div class="
+                    grid
+                    grid-cols-2
+                    md:grid-cols-4
+                    gap-4
+                    mb-5
+                ">
+
+
+
+                    <button
+                        id="withdrawBtn"
+
+                        onclick="
+                            goWithdraw()
+                        "
+
+                        class="
+                            bg-white
+                            rounded-3xl
+                            p-5
+                            shadow
+                            font-bold
+                        "
+                    >
+
+                        Withdraw
+
+                    </button>
+
+
+
+
+                    <button
+                        id="jobsBtn"
+
+                        onclick="
+                            goJobs()
+                        "
+
+                        class="
+                            bg-white
+                            rounded-3xl
+                            p-5
+                            shadow
+                            font-bold
+                        "
+                    >
+
+                        Jobs
+
+                    </button>
+
+
+
+
+                    <button
+                        id="referBtn"
+
+                        onclick="
+                            goReferral()
+                        "
+
+                        class="
+                            bg-white
+                            rounded-3xl
+                            p-5
+                            shadow
+                            font-bold
+                        "
+                    >
+
+                        Refer
+
+                    </button>
+
+
+
+
+                    <button
+                        id="txBtn"
+
+                        onclick="
+                            goTransactions()
+                        "
+
+                        class="
+                            bg-white
+                            rounded-3xl
+                            p-5
+                            shadow
+                            font-bold
+                        "
+                    >
+
+                        History
+
+                    </button>
+
+                </div>
+
+
+
+
+                <!-- STATS -->
+                <div class="
+                    bg-white
+                    rounded-3xl
+                    p-6
+                    shadow
+                ">
+
+                    <p class="
+                        text-slate-500
+                        mb-2
+                    ">
+                        Available Jobs
+                    </p>
+
+
+
+                    <h2 class="
+                        text-3xl
+                        font-bold
+                        text-blue-600
+                    ">
+
+                        ${data.available_tasks}
+
+                    </h2>
+
+                </div>
+
+
+            </div>
+
+        `;
+
+
+
+    }catch(err){
+
+        alert(
+            "Network error"
+        );
+
+    }
+
+}
+
+
+
+
+function goWithdraw(){
+
+    withdrawBtn.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "withdraw.html";
+
+}
+
+
+
+
+function goJobs(){
+
+    const btn =
+    document.getElementById(
+        "jobsBtn"
+    );
+
+
+
+    if(btn){
+
+        btn.innerHTML=
+        "Loading...";
+
+    }
+
+
+
+    navJobs.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "jobs.html";
+
+}
+
+
+
+
+function goReferral(){
+
+    referBtn.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "referrals.html";
+
+}
+
+
+
+
+function goTransactions(){
+
+    txBtn.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "transactions.html";
+
+}
+
+
+
+
+function goNotifications(){
+
+    navNotifications.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "notifications.html";
+
+}
+
+
+
+
+function goProfile(){
+
+    navProfile.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "profile.html";
+
+}
+
+
 </script>
 
 </body>
-</html>
+  </html>
