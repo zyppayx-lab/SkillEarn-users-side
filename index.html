@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkillEarn</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f9ff;
+}
+
+/* HERO */
+.hero {
+  background: #0a66ff;
+  color: white;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.hero p {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.btn-group {
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 12px 18px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: white;
+  color: #0a66ff;
+  font-weight: bold;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+/* SECTION */
+.section {
+  padding: 20px;
+}
+
+.section h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+/* CARDS */
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* FOOTER */
+.footer {
+  padding: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+}
+
+.footer a {
+  color: #0a66ff;
+  text-decoration: none;
+  margin: 0 6px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Earn Money Online Easily</h1>
+  <p>Complete tasks, freelance, or get hired globally.</p>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="go('register.html')">
+      Get Started
+    </button>
+    <button class="btn btn-outline" onclick="go('login.html')">
+      Login
+    </button>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="section">
+  <h2>Why Choose SkillEarn</h2>
+
+  <div class="card">💰 Instant earnings from simple tasks</div>
+  <div class="card">🌍 Work from anywhere in the world</div>
+  <div class="card">🔒 Secure escrow payment system</div>
+  <div class="card">⚡ Fast withdrawals (Manual approval)</div>
+</div>
+
+<!-- JOB TYPES -->
+<div class="section">
+  <h2>Ways to Earn</h2>
+
+  <div class="grid">
+    <div class="card">📱 Micro Tasks</div>
+    <div class="card">💻 Freelance Jobs</div>
+    <div class="card">🏢 Hiring Opportunities</div>
+    <div class="card">📢 Influencer Campaigns</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <h2>How It Works</h2>
+
+  <div class="card">1️⃣ Create your account</div>
+  <div class="card">2️⃣ Verify with OTP</div>
+  <div class="card">3️⃣ Start earning</div>
+  <div class="card">4️⃣ Withdraw your money</div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>© 2026 SkillEarn</p>
+  <div>
+    <a href="about.html">About</a> |
+    <a href="faq.html">FAQ</a> |
+    <a href="privacy.html">Privacy</a> |
+    <a href="terms.html">Terms</a>
+  </div>
+</div>
+
+<script>
+function go(page){
+  window.location.href = page;
+}
+</script>
+
+</body>
+</html>
