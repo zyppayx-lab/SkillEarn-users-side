@@ -1,78 +1,208 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Verify Email</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<style>
-body {
-  font-family: Arial;
-  background:#f5f9ff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.box {
-  background:white;
-  padding:20px;
-  width:300px;
-  border-radius:10px;
-}
-button {
-  background:#0a66ff;
-  color:white;
-  padding:10px;
-  border:none;
-  width:100%;
-}
-.loader { display:none; text-align:center; }
-</style>
+<title>SkillEarn Verify</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<div class="box">
-  <h3>Email Verification</h3>
+<body class="bg-slate-100 min-h-screen flex justify-center items-center px-4">
 
-  <input id="otp" placeholder="Enter OTP">
-  <button onclick="verify()">Verify</button>
+<div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
 
-  <div class="loader" id="loader">Verifying...</div>
-  <p id="msg"></p>
+    <div class="text-center mb-8">
+
+        <h1 class="text-3xl font-bold text-blue-600">
+            SkillEarn
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+            Verify your email
+        </p>
+
+    </div>
+
+
+
+    <input
+        id="otp"
+        placeholder="Enter 6-digit OTP"
+        maxlength="6"
+        class="w-full border p-4 rounded-xl mb-4 text-center text-xl"
+    >
+
+
+
+    <button
+        id="verifyBtn"
+        onclick="verifyOTP()"
+        class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mb-4"
+    >
+        Verify OTP
+    </button>
+
+
+
+    <button
+        id="resendBtn"
+        onclick="resendOTP()"
+        class="w-full border border-blue-600 text-blue-600 py-4 rounded-xl font-bold"
+    >
+        Resend OTP
+    </button>
+
 </div>
 
+
+
 <script>
-const API_BASE = "https://skillearn.onrender.com";
 
-async function verify() {
-  const loader = document.getElementById("loader");
-  const msg = document.getElementById("msg");
+const API =
+"https://skillearn.onrender.com";
 
-  loader.style.display = "block";
 
-  try {
-    const res = await fetch(API_BASE + "/api/auth/verify-email", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        email: localStorage.getItem("email"),
-        otp: otp.value
-      })
-    });
+const params =
+new URLSearchParams(
+window.location.search
+);
 
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.message);
 
-    msg.innerText = "Verified! Redirecting...";
-    setTimeout(()=> window.location.href="login.html",1500);
+const email =
+params.get("email");
 
-  } catch(err){
-    msg.innerText = err.message;
-  }
 
-  loader.style.display = "none";
+
+/* VERIFY */
+async function verifyOTP(){
+
+    verifyBtn.disabled=true;
+
+
+    verifyBtn.innerHTML=
+    "Verifying...";
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+"/api/auth/verify-email",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    email:email,
+
+                    otp:otp.value
+
+                })
+
+            }
+        );
+
+
+        const data =
+        await res.json();
+
+
+        alert(data.message);
+
+
+
+        if(data.message==="Verified"){
+
+            window.location=
+            "login.html";
+
+        }
+
+
+    }catch(err){
+
+        alert("Network error");
+
+    }
+
+
+
+    verifyBtn.disabled=false;
+
+
+    verifyBtn.innerHTML=
+    "Verify OTP";
+
 }
+
+
+
+
+/* RESEND */
+async function resendOTP(){
+
+    resendBtn.disabled=true;
+
+
+    resendBtn.innerHTML=
+    "Sending...";
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+"/api/auth/resend-otp",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    email:email
+
+                })
+
+            }
+        );
+
+
+        const data =
+        await res.json();
+
+
+        alert(data.message);
+
+
+    }catch(err){
+
+        alert("Network error");
+
+    }
+
+
+
+    resendBtn.disabled=false;
+
+
+    resendBtn.innerHTML=
+    "Resend OTP";
+
+}
+
+
 </script>
 
 </body>
