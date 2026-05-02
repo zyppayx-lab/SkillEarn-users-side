@@ -4,15 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Withdraw • SkillEarn</title>
+<title>Withdraw</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.toast{
+    animation:slide .3s;
+}
+
+@keyframes slide{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+</style>
+
 </head>
 
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
+
+
+
+<div
+    id="loader"
+    class="hidden fixed inset-0 bg-black/10 flex items-center justify-center z-50"
+>
+    <div class="w-16 h-16 rounded-full border-[5px] border-blue-100 border-t-blue-600 animate-spin bg-white"></div>
+</div>
+
+
+
+<div
+    id="toast"
+    class="hidden fixed bottom-5 left-4 right-4 z-50"
+></div>
 
 
 
@@ -31,112 +75,102 @@ localStorage.getItem(
 );
 
 
-const app =
-document.getElementById(
-    "app"
+const user =
+JSON.parse(
+    localStorage.getItem(
+        "user"
+    )
 );
 
 
-
-let user =
-null;
-
-
-
-
-if(!token){
-
-    window.location=
+if(
+    !token ||
+    !user
+){
+    location =
     "login.html";
-
 }
 
 
 
+const banks = [
 
-load();
+"Access Bank",
+"Citibank",
+"Ecobank",
+"FCMB",
+"Fidelity Bank",
+"First Bank",
+"Globus Bank",
+"GTBank",
+"Heritage Bank",
+"Jaiz Bank",
+"Keystone Bank",
+"Polaris Bank",
+"Providus Bank",
+"Stanbic IBTC",
+"Standard Chartered",
+"Sterling Bank",
+"SunTrust Bank",
+"Titan Trust Bank",
+"UBA",
+"Union Bank",
+"Wema Bank",
+"Zenith Bank",
 
+"OPay",
+"PalmPay",
+"Kuda",
+"Moniepoint",
+"Rubies",
+"Sparkle",
+"VFD",
+"Mint",
+"Eyowo"
 
-
-
-function loader(){
-
-    app.innerHTML=`
-
-        <div class="
-            min-h-screen
-            flex
-            justify-center
-            items-center
-        ">
-
-            <div class="
-                w-12
-                h-12
-                border-4
-                border-blue-600
-                border-t-transparent
-                rounded-full
-                animate-spin
-            "></div>
-
-        </div>
-
-    `;
-
-}
-
-
-
-
-async function load(){
-
-    loader();
+];
 
 
 
-    try{
+const networks = [
 
-        const res =
-        await fetch(
-            API+
-            "/api/users/wallet",
-            {
+"BTC",
+"ETH",
+"BEP20",
+"TRC20",
+"SOL",
+"POLYGON",
+"AVAX",
+"ARB",
+"BASE",
+"LTC",
+"DOGE",
+"USDT-TRC20",
+"USDT-BEP20",
+"USDC"
 
-                headers:{
-                    Authorization:
-                    "Bearer "+token
-                }
-
-            }
-        );
-
-
-
-        user =
-        await res.json();
+];
 
 
 
-        render();
+render();
 
 
 
-    }catch(error){
 
-        console.error(
-            error
-        );
+function currency(){
 
-
-
-        alert(
-            "Failed to load"
-        );
-
+    if(
+        user.country==="NG"
+    ){
+        return "₦";
     }
 
+    return "$";
+
 }
+
+
 
 
 
@@ -144,74 +178,54 @@ async function load(){
 function render(){
 
     const isNG =
-    user.country ===
-    "NG";
+    user.country==="NG";
 
 
 
-    const min =
-    isNG
-    ? 1000
-    : 1;
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
+        <div class="p-4 pb-28">
 
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+                Withdraw
+            </h1>
 
-
-    app.innerHTML=`
-
-        <div class="
-            p-4
-            max-w-md
-            mx-auto
-        ">
 
 
 
             <div class="
                 bg-white
-                rounded-3xl
-                p-6
+                rounded-[28px]
+                p-5
                 shadow
             ">
-
-                <h1 class="
-                    text-2xl
-                    font-bold
-                    mb-5
-                ">
-                    Withdraw
-                </h1>
-
-
-
-
-                <p class="
-                    text-slate-500
-                    mb-4
-                ">
-
-                    Minimum:
-                    ${min}
-
-                </p>
 
 
 
 
                 <input
+
                     id="amount"
 
                     type="number"
 
                     placeholder="
-                        Amount
+                        Amount (${currency()})
                     "
 
                     class="
                         w-full
                         border
                         p-4
-                        rounded-xl
+                        rounded-2xl
                         mb-4
                     "
                 >
@@ -219,163 +233,242 @@ function render(){
 
 
 
-                ${isNG ?
+                ${
+                    isNG
 
-                `
+                    ?
 
-                <input
-                    id="bank_name"
+                    `
 
-                    placeholder="
-                        Bank name
-                    "
+                    <select
 
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
+                        id="bank"
 
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-2xl
+                            mb-4
+                        "
+                    >
 
+                        ${
 
-                <input
-                    id="account_number"
+                            banks.map(
 
-                    placeholder="
-                        Account number
-                    "
+                                bank=>`
 
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
+                                <option>
+                                    ${bank}
+                                </option>
 
+                                `
 
+                            ).join(
+                                ""
+                            )
 
-                <input
-                    id="account_name"
+                        }
 
-                    placeholder="
-                        Account name
-                    "
-
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
-
-                `
-
-                :
-
-                `
-
-                <input
-                    id="crypto_address"
-
-                    placeholder="
-                        Wallet address
-                    "
-
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
+                    </select>
 
 
 
-                <input
-                    id="crypto_network"
 
-                    placeholder="
-                        Network
-                    "
+                    <input
 
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
+                        id="account_number"
 
-                `}
+                        placeholder="
+                            Account Number
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-2xl
+                            mb-4
+                        "
+                    >
+
+
+
+
+                    <input
+
+                        id="account_name"
+
+                        placeholder="
+                            Account Name
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-2xl
+                            mb-4
+                        "
+                    >
+
+                    `
+
+                    :
+
+                    `
+
+                    <select
+
+                        id="network"
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-2xl
+                            mb-4
+                        "
+                    >
+
+                        ${
+
+                            networks.map(
+
+                                net=>`
+
+                                <option>
+                                    ${net}
+                                </option>
+
+                                `
+
+                            ).join(
+                                ""
+                            )
+
+                        }
+
+                    </select>
+
+
+
+
+                    <input
+
+                        id="address"
+
+                        placeholder="
+                            Wallet Address
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-2xl
+                            mb-4
+                        "
+                    >
+
+                    `
+                }
 
 
 
 
                 <button
-                    id="withdrawBtn"
+
+                    onclick="
+                        withdraw()
+                    "
 
                     class="
                         w-full
                         bg-blue-600
                         text-white
                         py-4
-                        rounded-xl
+                        rounded-2xl
                         font-bold
                     "
                 >
 
-                    Submit Withdrawal
+                    Withdraw
 
                 </button>
+
+
+
+
+
+                <p class="
+                    text-center
+                    text-sm
+                    text-slate-500
+                    mt-4
+                ">
+
+                    Minimum:
+
+                    ${
+                        isNG
+
+                        ?
+
+                        "₦1000"
+
+                        :
+
+                        "$1"
+                    }
+
+                </p>
 
             </div>
 
         </div>
 
+
+
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav("🏠","dashboard.html")}
+            ${nav("💰","jobs.html")}
+            ${nav("🔔","notifications.html")}
+            ${nav("👤","profile.html")}
+
+        </div>
+
     `;
-
-
-
-
-    document
-    .getElementById(
-        "withdrawBtn"
-    )
-    .addEventListener(
-        "click",
-        withdraw
-    );
 
 }
 
 
 
 
+
+
 async function withdraw(){
 
-    const button =
-    document
-    .getElementById(
-        "withdrawBtn"
-    );
+    showLoader();
 
 
 
-    button.disabled =
-    true;
-
-
-    button.innerHTML =
-    "Submitting...";
+    const isNG =
+    user.country==="NG";
 
 
 
@@ -383,11 +476,13 @@ async function withdraw(){
 
         amount:
         Number(
+
             document
             .getElementById(
                 "amount"
             )
             .value
+
         )
 
     };
@@ -395,14 +490,13 @@ async function withdraw(){
 
 
     if(
-        user.country ===
-        "NG"
+        isNG
     ){
 
         body.bank_name =
         document
         .getElementById(
-            "bank_name"
+            "bank"
         )
         .value;
 
@@ -424,21 +518,23 @@ async function withdraw(){
         )
         .value;
 
-    }else{
+    }
 
-        body.crypto_address =
+    else{
+
+        body.crypto_network =
         document
         .getElementById(
-            "crypto_address"
+            "network"
         )
         .value;
 
 
 
-        body.crypto_network =
+        body.crypto_address =
         document
         .getElementById(
-            "crypto_network"
+            "address"
         )
         .value;
 
@@ -446,13 +542,14 @@ async function withdraw(){
 
 
 
-
     try{
 
         const res =
         await fetch(
+
             API+
             "/api/users/withdraw",
+
             {
 
                 method:"POST",
@@ -461,8 +558,8 @@ async function withdraw(){
                 headers:{
 
                     Authorization:
-                    "Bearer "+token,
-
+                    "Bearer "+
+                    token,
 
                     "Content-Type":
                     "application/json"
@@ -476,6 +573,7 @@ async function withdraw(){
                 )
 
             }
+
         );
 
 
@@ -485,47 +583,169 @@ async function withdraw(){
 
 
 
-        alert(
-            data.message
+        hideLoader();
+
+
+
+        const messages = {
+
+            "Below minimum":
+            "Amount is below minimum withdrawal",
+
+            "Insufficient balance":
+            "Your wallet balance is insufficient",
+
+            "Withdrawal submitted":
+            "Withdrawal submitted successfully"
+
+        };
+
+
+
+        toast(
+
+            messages[
+                data.message
+            ] ||
+
+            "Completed"
+
         );
-
-
-
-        if(
-            data.message===
-            "Withdrawal submitted"
-        ){
-
-            window.location=
-            "dashboard.html";
-
-        }
 
 
 
     }catch(error){
 
-        console.error(
-            error
-        );
+        hideLoader();
 
-
-
-        alert(
-            "Failed"
+        toast(
+            "Connection failed"
         );
 
     }
 
+}
 
 
 
-    button.disabled =
-    false;
 
 
-    button.innerHTML =
-    "Submit Withdrawal";
+
+function showLoader(){
+
+    document
+    .getElementById(
+        "loader"
+    )
+    .classList.remove(
+        "hidden"
+    );
+
+}
+
+
+
+
+
+
+function hideLoader(){
+
+    document
+    .getElementById(
+        "loader"
+    )
+    .classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+
+
+
+function toast(
+    message
+){
+
+    const box =
+    document
+    .getElementById(
+        "toast"
+    );
+
+
+
+    box.innerHTML = `
+
+        <div class="
+            toast
+            bg-blue-600
+            text-white
+            px-5
+            py-4
+            rounded-2xl
+            text-center
+            shadow-xl
+        ">
+
+            ${message}
+
+        </div>
+
+    `;
+
+
+
+    box.classList.remove(
+        "hidden"
+    );
+
+
+
+    setTimeout(
+
+        ()=>{
+
+            box.classList.add(
+                "hidden"
+            );
+
+        },
+
+        2500
+
+    );
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    `;
 
 }
 
