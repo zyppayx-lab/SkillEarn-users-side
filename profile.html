@@ -4,43 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>SkillEarn Profile</title>
+<title>Profile • SkillEarn</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-
 <body class="bg-slate-100 pb-24">
 
-<div id="screen"></div>
-
-
-
-<!-- NAV -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
-
-    <div class="grid grid-cols-4 text-center">
-
-        <button onclick="goDashboard()" class="p-4">
-            Dashboard
-        </button>
-
-        <button onclick="goJobs()" class="p-4">
-            Jobs
-        </button>
-
-        <button onclick="goNotifications()" class="p-4">
-            Notifications
-        </button>
-
-        <button class="p-4 text-blue-600 font-bold">
-            Profile
-        </button>
-
-    </div>
-
-</div>
-
+<div id="app"></div>
 
 
 <script>
@@ -55,326 +26,113 @@ localStorage.getItem(
 );
 
 
+const app =
+document.getElementById(
+    "app"
+);
 
-loadProfile();
+
+
+
+load();
 
 
 
 
-function loader(){
+async function load(){
 
-    screen.innerHTML=`
+    const res =
+    await fetch(
+        API+
+        "/api/users/wallet",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+    const user =
+    await res.json();
+
+
+
+    app.innerHTML=`
 
         <div class="
-            min-h-screen
-            flex
-            justify-center
-            items-center
+            p-4
         ">
 
             <div class="
-                w-12
-                h-12
-                border-4
-                border-blue-600
-                border-t-transparent
-                rounded-full
-                animate-spin
-            "></div>
-
-        </div>
-
-    `;
-
-}
-
-
-
-
-async function loadProfile(){
-
-    loader();
-
-
-
-
-    const walletRes =
-    await fetch(
-        API+"/api/users/wallet",
-        {
-
-            headers:{
-                Authorization:
-                "Bearer "+token
-            }
-
-        }
-    );
-
-
-
-    const txRes =
-    await fetch(
-        API+"/api/users/transactions",
-        {
-
-            headers:{
-                Authorization:
-                "Bearer "+token
-            }
-
-        }
-    );
-
-
-
-    const refRes =
-    await fetch(
-        API+"/api/users/referrals",
-        {
-
-            headers:{
-                Authorization:
-                "Bearer "+token
-            }
-
-        }
-    );
-
-
-
-
-    const wallet =
-    await walletRes.json();
-
-
-    const tx =
-    await txRes.json();
-
-
-    const refs =
-    await refRes.json();
-
-
-
-
-    const currency =
-    wallet.country==="NG"
-    ? "₦"
-    : "$";
-
-
-
-    const referralLink =
-    location.origin+
-    "/register.html?ref="+
-    wallet.referral_code;
-
-
-
-
-    screen.innerHTML=`
-
-        <div class="p-4 max-w-6xl mx-auto">
-
-
-            <!-- WALLET -->
-            <div class="
-                bg-blue-600
-                text-white
+                bg-white
                 rounded-3xl
                 p-6
-                mb-5
+                shadow
             ">
 
-                <p class="mb-2">
-                    Wallet Balance
+                <h1 class="
+                    text-2xl
+                    font-bold
+                    mb-5
+                ">
+                    Profile
+                </h1>
+
+
+
+                <p class="
+                    mb-3
+                ">
+                    Country:
+                    ${user.country}
                 </p>
 
 
-                <h2 class="
-                    text-3xl
-                    font-bold
+
+                <p class="
+                    mb-3
                 ">
-                    ${currency}
-                    ${wallet.balance}
-                </h2>
+                    Balance:
+                    ${user.balance}
+                </p>
+
+
+
+                <p class="
+                    mb-6
+                ">
+                    Referral:
+                    ${user.referral_code}
+                </p>
+
+
 
 
                 <button
                     onclick="
-                        goWithdraw()
+                        logout()
                     "
 
                     class="
-                        bg-white
-                        text-blue-600
-                        px-5
+                        bg-red-500
+                        text-white
+                        px-6
                         py-3
                         rounded-xl
-                        mt-5
                         font-bold
                     "
                 >
 
-                    Withdraw
+                    Logout
 
                 </button>
 
             </div>
-
-
-
-
-            <!-- REFERRAL -->
-            <div class="
-                bg-white
-                rounded-3xl
-                p-6
-                shadow
-                mb-5
-            ">
-
-                <h2 class="
-                    text-xl
-                    font-bold
-                    mb-4
-                ">
-                    Referral Program
-                </h2>
-
-
-
-                <input
-                    id="refLink"
-
-                    value="${referralLink}"
-
-                    class="
-                        w-full
-                        border
-                        p-4
-                        rounded-xl
-                        mb-4
-                    "
-                >
-
-
-
-                <button
-                    onclick="
-                        copyReferral()
-                    "
-
-                    class="
-                        w-full
-                        bg-blue-600
-                        text-white
-                        py-3
-                        rounded-xl
-                    "
-                >
-
-                    Copy Referral Link
-
-                </button>
-
-            </div>
-
-
-
-
-            <!-- REFERRALS -->
-            <div class="
-                bg-white
-                rounded-3xl
-                p-6
-                shadow
-                mb-5
-            ">
-
-                <h2 class="
-                    text-xl
-                    font-bold
-                    mb-4
-                ">
-                    Referral Earnings
-                </h2>
-
-
-
-                ${
-                    refs.length
-                    ?
-                    refs.map(
-                        item=>`
-
-                        <div class="
-                            border-b
-                            py-3
-                        ">
-
-                            ${item.name}
-                            -
-                            ${item.amount}
-                            ${item.currency}
-
-                        </div>
-
-                        `
-                    ).join("")
-                    :
-                    "No referrals yet"
-                }
-
-            </div>
-
-
-
-
-            <!-- TRANSACTIONS -->
-            <div class="
-                bg-white
-                rounded-3xl
-                p-6
-                shadow
-            ">
-
-                <h2 class="
-                    text-xl
-                    font-bold
-                    mb-4
-                ">
-                    Transactions
-                </h2>
-
-
-
-                ${
-                    tx.length
-                    ?
-                    tx.map(
-                        item=>`
-
-                        <div class="
-                            border-b
-                            py-3
-                        ">
-
-                            ${item.type}
-                            -
-                            ${item.amount}
-
-                        </div>
-
-                        `
-                    ).join("")
-                    :
-                    "No transactions"
-                }
-
-            </div>
-
 
         </div>
 
@@ -385,64 +143,16 @@ async function loadProfile(){
 
 
 
-function copyReferral(){
+function logout(){
 
-    refLink.select();
+    localStorage.clear();
 
-
-    document.execCommand(
-        "copy"
-    );
-
-
-    alert(
-        "Copied"
-    );
+    location=
+    "login.html";
 
 }
-
-
-
-
-function goWithdraw(){
-
-    window.location=
-    "withdraw.html";
-
-}
-
-
-
-
-function goDashboard(){
-
-    window.location=
-    "dashboard.html";
-
-}
-
-
-
-
-function goJobs(){
-
-    window.location=
-    "jobs.html";
-
-}
-
-
-
-
-function goNotifications(){
-
-    window.location=
-    "notifications.html";
-
-}
-
 
 </script>
 
 </body>
-  </html>
+</html>
