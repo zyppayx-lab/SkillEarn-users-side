@@ -1,43 +1,293 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/style.css">
-<title>Notifications</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Notifications</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<h2 class="title">Notifications</h2>
+<body class="bg-slate-100 pb-24">
 
-<div id="list"></div>
+<div id="screen"></div>
 
-<div class="nav">
-  <button onclick="nav('dashboard')">Home</button>
-  <button onclick="nav('jobs')">Jobs</button>
-  <button class="active">Notifications</button>
-  <button onclick="nav('profile')">Profile</button>
+
+
+<!-- BOTTOM NAV -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
+
+    <div class="grid grid-cols-4 text-center">
+
+        <button
+            id="navDashboard"
+            onclick="goDashboard()"
+            class="p-4"
+        >
+            Dashboard
+        </button>
+
+
+
+        <button
+            id="navJobs"
+            onclick="goJobs()"
+            class="p-4"
+        >
+            Jobs
+        </button>
+
+
+
+        <button
+            class="p-4 text-blue-600 font-bold"
+        >
+            Notifications
+        </button>
+
+
+
+        <button
+            id="navProfile"
+            onclick="goProfile()"
+            class="p-4"
+        >
+            Profile
+        </button>
+
+    </div>
+
 </div>
 
-<script src="../js/core.js"></script>
+
+
 
 <script>
-async function load() {
-  const data = await apiRequest("/api/users/notifications");
 
-  document.getElementById("list").innerHTML =
-    data.map(n => `
-      <div class="card">
-        <p>${n.message}</p>
-      </div>
-    `).join("");
+const API =
+"https://skillearn.onrender.com";
+
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+
+if(!token){
+
+    window.location=
+    "login.html";
+
 }
 
-function nav(p){
-  window.location.href = p + ".html";
+
+
+
+loadNotifications();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
 }
 
-load();
+
+
+
+async function loadNotifications(){
+
+    loader();
+
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+
+            "/api/users/notifications",
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+token
+                }
+
+            }
+        );
+
+
+
+        const notifications =
+        await res.json();
+
+
+
+
+        if(
+            !notifications.length
+        ){
+
+            screen.innerHTML=`
+
+                <div class="
+                    min-h-screen
+                    flex
+                    justify-center
+                    items-center
+                    p-6
+                    text-center
+                ">
+
+                    <div>
+
+                        <h2 class="
+                            text-2xl
+                            font-bold
+                            mb-2
+                        ">
+                            No notifications
+                        </h2>
+
+                        <p class="
+                            text-slate-500
+                        ">
+                            Updates will appear here
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            return;
+
+        }
+
+
+
+
+        screen.innerHTML=
+        notifications.map(
+            item=>`
+
+            <div class="
+                bg-white
+                rounded-3xl
+                p-5
+                shadow
+                m-4
+            ">
+
+                <p class="
+                    text-slate-800
+                    mb-2
+                ">
+                    ${item.message || ""}
+                </p>
+
+
+
+                <p class="
+                    text-xs
+                    text-slate-400
+                ">
+                    ${
+                        item.created_at ||
+                        ""
+                    }
+                </p>
+
+            </div>
+
+            `
+        ).join("");
+
+
+
+    }catch(err){
+
+        alert(
+            "Network error"
+        );
+
+    }
+
+}
+
+
+
+
+function goDashboard(){
+
+    navDashboard.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "dashboard.html";
+
+}
+
+
+
+
+function goJobs(){
+
+    navJobs.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "jobs.html";
+
+}
+
+
+
+
+function goProfile(){
+
+    navProfile.innerHTML=
+    "Loading...";
+
+
+    window.location=
+    "profile.html";
+
+}
+
+
 </script>
 
 </body>
