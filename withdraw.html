@@ -1,129 +1,517 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/style.css">
-<title>Withdraw</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Withdraw</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<h2 class="title">Withdraw</h2>
+<body class="bg-slate-100">
 
-<div class="card">
+<div id="screen"></div>
 
-  <input id="amount" type="number" placeholder="Amount">
 
-  <!-- BANK SECTION -->
-  <div id="bankSection">
-    <input id="bank" placeholder="Bank Name">
-    <input id="accNum" placeholder="Account Number">
-    <input id="accName" placeholder="Account Name">
-  </div>
-
-  <!-- CRYPTO SECTION -->
-  <div id="cryptoSection">
-    <input id="crypto" placeholder="Crypto Address">
-
-    <select id="network" onchange="updatePlaceholder()">
-      <option value="">Select Network</option>
-      <option value="USDT_TRC20">USDT (TRC20)</option>
-      <option value="USDT_ERC20">USDT (ERC20)</option>
-      <option value="USDT_BEP20">USDT (BEP20)</option>
-      <option value="BTC">Bitcoin (BTC)</option>
-      <option value="ETH">Ethereum (ETH)</option>
-      <option value="BNB">Binance Coin (BNB)</option>
-      <option value="SOL">Solana (SOL)</option>
-      <option value="LTC">Litecoin (LTC)</option>
-    </select>
-  </div>
-
-  <button onclick="withdraw(this)" class="primary-btn">Withdraw</button>
-
-</div>
-
-<script src="../js/core.js"></script>
 
 <script>
-const user = getUser();
 
-/* =========================
-   COUNTRY SWITCH
-========================= */
-if (user.country !== "NG") {
-  document.getElementById("bankSection").style.display = "none";
-} else {
-  document.getElementById("cryptoSection").style.display = "none";
+const API =
+"https://skillearn.onrender.com";
+
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+
+let userCountry;
+
+
+
+load();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
 }
 
-/* =========================
-   UX IMPROVEMENT
-========================= */
-function updatePlaceholder(){
-  const network = document.getElementById("network").value;
-  const input = document.getElementById("crypto");
 
-  if(network.includes("TRC20")){
-    input.placeholder = "Enter TRC20 wallet address";
-  } else if(network.includes("ERC20")){
-    input.placeholder = "Enter ERC20 wallet address";
-  } else if(network.includes("BEP20")){
-    input.placeholder = "Enter BEP20 wallet address";
-  } else if(network === "BTC"){
-    input.placeholder = "Enter Bitcoin address";
-  } else if(network === "ETH"){
-    input.placeholder = "Enter Ethereum address";
-  } else {
-    input.placeholder = "Crypto Address";
-  }
+
+
+async function load(){
+
+    loader();
+
+
+
+    const res =
+    await fetch(
+        API+"/api/users/wallet",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+    const user =
+    await res.json();
+
+
+
+    userCountry =
+    user.country;
+
+
+
+    renderForm(
+        user
+    );
+
 }
 
-/* =========================
-   WITHDRAW
-========================= */
-async function withdraw(btn){
-  showLoader(btn);
 
-  try {
 
-    const amountVal = Number(amount.value);
 
-    if (!amountVal || amountVal <= 0) {
-      throw new Error("Enter valid amount");
-    }
+function renderForm(user){
 
-    // Crypto validation
-    if (user.country !== "NG") {
-      if (!crypto.value || !network.value) {
-        throw new Error("Enter crypto address and select network");
-      }
-    }
+    const isNG =
+    user.country==="NG";
 
-    // Bank validation
-    if (user.country === "NG") {
-      if (!bank.value || !accNum.value || !accName.value) {
-        throw new Error("Fill all bank details");
-      }
-    }
 
-    await apiRequest("/api/users/withdraw","POST",{
-      amount: amountVal,
-      bank_name: bank.value,
-      account_number: accNum.value,
-      account_name: accName.value,
-      crypto_address: crypto.value,
-      crypto_network: network.value
-    });
+    const min =
+    isNG
+    ? 1000
+    : 1;
 
-    alert("Withdrawal submitted successfully");
 
-  } catch(e){
-    alert(e.message);
-  }
+    const currency =
+    isNG
+    ? "₦"
+    : "$";
 
-  hideLoader(btn);
+
+
+    screen.innerHTML=`
+
+        <div class="
+            max-w-md
+            mx-auto
+            p-4
+        ">
+
+
+
+            <div class="
+                bg-blue-600
+                text-white
+                rounded-3xl
+                p-6
+                mb-5
+            ">
+
+                <p>
+                    Available Balance
+                </p>
+
+
+                <h2 class="
+                    text-3xl
+                    font-bold
+                    mt-2
+                ">
+
+                    ${currency}
+                    ${user.balance}
+
+                </h2>
+
+            </div>
+
+
+
+
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+            ">
+
+                <p class="
+                    text-slate-500
+                    mb-5
+                ">
+
+                    Minimum withdrawal:
+                    ${currency}${min}
+
+                </p>
+
+
+
+
+                <input
+                    id="amount"
+
+                    type="number"
+
+                    placeholder="
+                        Amount
+                    "
+
+                    class="
+                        w-full
+                        border
+                        p-4
+                        rounded-xl
+                        mb-4
+                    "
+                >
+
+
+
+
+                ${
+                    isNG
+                    ?
+
+                    `
+
+                    <input
+                        id="bank_name"
+
+                        placeholder="
+                            Bank name
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-xl
+                            mb-4
+                        "
+                    >
+
+
+
+                    <input
+                        id="account_number"
+
+                        placeholder="
+                            Account number
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-xl
+                            mb-4
+                        "
+                    >
+
+
+
+                    <input
+                        id="account_name"
+
+                        placeholder="
+                            Account name
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-xl
+                            mb-4
+                        "
+                    >
+
+                    `
+
+                    :
+
+                    `
+
+                    <input
+                        id="crypto_address"
+
+                        placeholder="
+                            Wallet address
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-xl
+                            mb-4
+                        "
+                    >
+
+
+
+                    <input
+                        id="crypto_network"
+
+                        placeholder="
+                            Network
+                        "
+
+                        class="
+                            w-full
+                            border
+                            p-4
+                            rounded-xl
+                            mb-4
+                        "
+                    >
+
+                    `
+                }
+
+
+
+
+                <button
+                    id="withdrawBtn"
+
+                    onclick="
+                        withdraw()
+                    "
+
+                    class="
+                        w-full
+                        bg-blue-600
+                        text-white
+                        py-4
+                        rounded-xl
+                        font-bold
+                    "
+                >
+
+                    Withdraw
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
 }
+
+
+
+
+async function withdraw(){
+
+    const isNG =
+    userCountry==="NG";
+
+
+    const amount =
+    Number(
+        document.getElementById(
+            "amount"
+        ).value
+    );
+
+
+
+    if(
+        isNG &&
+        amount<1000
+    ){
+
+        alert(
+            "Minimum withdrawal is ₦1000"
+        );
+
+        return;
+
+    }
+
+
+
+
+    if(
+        !isNG &&
+        amount<1
+    ){
+
+        alert(
+            "Minimum withdrawal is $1"
+        );
+
+        return;
+
+    }
+
+
+
+
+    withdrawBtn.disabled=true;
+
+
+    withdrawBtn.innerHTML=
+    "Processing...";
+
+
+
+
+    const payload={
+
+        amount:amount
+
+    };
+
+
+
+
+    if(isNG){
+
+        payload.bank_name =
+        bank_name.value;
+
+
+        payload.account_number =
+        account_number.value;
+
+
+        payload.account_name =
+        account_name.value;
+
+    }
+
+
+    else{
+
+        payload.crypto_address =
+        crypto_address.value;
+
+
+        payload.crypto_network =
+        crypto_network.value;
+
+    }
+
+
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+
+            "/api/users/withdraw",
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    Authorization:
+                    "Bearer "+token
+
+                },
+
+                body:
+                JSON.stringify(
+                    payload
+                )
+
+            }
+        );
+
+
+
+        const data =
+        await res.json();
+
+
+
+        alert(
+            data.message
+        );
+
+
+
+        if(
+            data.message===
+            "Withdrawal submitted"
+        ){
+
+            window.location=
+            "profile.html";
+
+        }
+
+
+
+    }catch(err){
+
+        alert(
+            "Network error"
+        );
+
+    }
+
+
+
+
+    withdrawBtn.disabled=false;
+
+
+    withdrawBtn.innerHTML=
+    "Withdraw";
+
+}
+
+
 </script>
 
 </body>
-</html>
+  </html>
