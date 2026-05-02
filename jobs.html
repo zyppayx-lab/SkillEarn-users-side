@@ -4,40 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Jobs • SkillEarn</title>
+<title>Jobs</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 
-.nav-item{
+.nav-btn{
     transition:.25s;
 }
 
-.nav-item.active{
-    transform:scale(1.15);
+.nav-btn:active{
+    transform:scale(.85);
 }
 
-.nav-icon{
-    transition:.25s;
+.modal{
+    animation:pop .25s;
 }
 
-.nav-item.active .nav-icon{
-    animation:bounce .4s;
-}
+@keyframes pop{
 
-@keyframes bounce{
-
-    0%{
-        transform:scale(1);
+    from{
+        transform:scale(.8);
+        opacity:0;
     }
 
-    50%{
-        transform:scale(1.3);
-    }
-
-    100%{
+    to{
         transform:scale(1);
+        opacity:1;
     }
 
 }
@@ -46,9 +40,44 @@
 
 </head>
 
-<body class="bg-slate-100 pb-24">
+
+<body class="bg-slate-100">
 
 <div id="app"></div>
+
+
+
+<div
+    id="loader"
+
+    class="
+        fixed
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/10
+        z-50
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
+</div>
+
+
+
+<div id="modal"></div>
+
 
 
 <script>
@@ -66,20 +95,20 @@ localStorage.getItem(
 );
 
 
-const app =
-document.getElementById(
-    "app"
+const user =
+JSON.parse(
+    localStorage.getItem(
+        "user"
+    )
 );
-
 
 
 if(!token){
 
-    window.location=
+    location =
     "login.html";
 
 }
-
 
 
 
@@ -88,68 +117,79 @@ load();
 
 
 
-function loader(){
-
-    app.innerHTML=`
-
-        <div class="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-        ">
-
-            <div class="
-                w-12
-                h-12
-                border-4
-                border-blue-600
-                border-t-transparent
-                rounded-full
-                animate-spin
-            "></div>
-
-        </div>
-
-    `;
-
-}
-
-
-
-
 async function load(){
 
-    loader();
+    try{
 
+        const res =
+        await fetch(
 
+            API+
+            "/api/users/tasks",
 
-    const res =
-    await fetch(
-        API+
-        "/api/users/tasks",
-        {
+            {
 
-            headers:{
-                Authorization:
-                "Bearer "+token
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
             }
 
-        }
-    );
+        );
 
 
 
-    const jobs =
-    await res.json();
+        const jobs =
+        await res.json();
 
 
 
-    render(
-        jobs
-    );
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render(
+            jobs
+        );
+
+
+
+    }catch(error){
+
+        location =
+        "login.html";
+
+    }
 
 }
+
+
+
+
+
+
+function currency(){
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+    return "$";
+
+}
+
+
 
 
 
@@ -158,118 +198,68 @@ function render(
     jobs
 ){
 
-    let html = "";
-
-
-
-    jobs.forEach(
-        job=>{
-
-            html += `
-
-                <div class="
-                    bg-white
-                    rounded-3xl
-                    p-5
-                    shadow
-                    mb-4
-                ">
-
-                    <h2 class="
-                        font-bold
-                        text-lg
-                        mb-2
-                    ">
-                        ${job.title}
-                    </h2>
-
-
-
-                    <p class="
-                        text-slate-600
-                        mb-4
-                    ">
-                        ${job.description}
-                    </p>
-
-
-
-                    <p class="
-                        text-blue-600
-                        font-bold
-                        mb-4
-                    ">
-                        Reward:
-                        ${job.reward}
-                    </p>
-
-
-
-
-                    <input
-                        id="
-                            proof_${job.id}
-                        "
-
-                        placeholder="
-                            Submit proof
-                        "
-
-                        class="
-                            w-full
-                            border
-                            p-3
-                            rounded-xl
-                            mb-4
-                        "
-                    >
-
-
-
-
-                    <button
-
-                        onclick="
-                            submitJob(
-                                ${job.id}
-                            )
-                        "
-
-                        class="
-                            bg-blue-600
-                            text-white
-                            px-6
-                            py-3
-                            rounded-xl
-                            font-bold
-                        "
-                    >
-
-                        Submit
-
-                    </button>
-
-                </div>
-
-            `;
-
-        }
-    );
-
-
-
-    app.innerHTML=`
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
             p-4
+            pb-28
         ">
 
-            ${html}
+
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+                Available Jobs
+            </h1>
+
+
+
+
+            ${
+
+                jobs.map(
+
+                    job=>card(
+                        job
+                    )
+
+                ).join(
+                    ""
+                )
+
+            }
+
 
         </div>
 
 
-        ${bottomNav()}
+
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav("🏠","dashboard.html")}
+            ${nav("💰","jobs.html")}
+            ${nav("🔔","notifications.html")}
+            ${nav("👤","profile.html")}
+
+        </div>
 
     `;
 
@@ -278,56 +268,204 @@ function render(
 
 
 
-async function submitJob(
-    id
+
+
+function card(
+    job
 ){
 
-    const proof =
-    document
-    .getElementById(
-        "proof_"+id
+    const reward =
+    Number(
+        job.reward
     )
-    .value;
+    .toLocaleString();
+
+
+
+    const category =
+    job.category ||
+    "GENERAL";
+
+
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
 
 
 
 
-    await fetch(
-        API+
-        "/api/users/submit-task",
-        {
+            <div class="
+                flex
+                justify-between
+                mb-3
+            ">
 
-            method:"POST",
-
-
-            headers:{
-
-                Authorization:
-                "Bearer "+token,
-
-
-                "Content-Type":
-                "application/json"
-
-            },
+                <h3 class="
+                    font-bold
+                    text-lg
+                ">
+                    ${job.title}
+                </h3>
 
 
-            body:
-            JSON.stringify({
 
-                task_id:id,
+                <span class="
+                    text-xs
+                    bg-blue-100
+                    text-blue-700
+                    px-3
+                    py-1
+                    rounded-full
+                ">
 
-                proof:proof
+                    ${category}
 
-            })
+                </span>
 
-        }
+            </div>
+
+
+
+
+            <p class="
+                text-slate-600
+                mb-4
+            ">
+
+                ${job.description}
+
+            </p>
+
+
+
+
+            <div class="
+                text-blue-600
+                font-bold
+                mb-4
+            ">
+
+                ${currency()}
+                ${reward}
+
+            </div>
+
+
+
+
+            <button
+
+                onclick="
+                    submitTask(
+                        ${job.id},
+                        '${category}'
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                    font-bold
+                "
+            >
+
+                Submit Job
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function submitTask(
+    taskId,
+    category
+){
+
+    let label =
+    "Proof link / text";
+
+
+
+    if(
+        category==="APP"
+    ){
+
+        label =
+        "Screenshot URL";
+
+    }
+
+
+
+    if(
+        category==="SURVEY"
+    ){
+
+        label =
+        "Completion code";
+
+    }
+
+
+
+    if(
+        category==="FREELANCE"
+    ){
+
+        label =
+        "Portfolio / file URL";
+
+    }
+
+
+
+    if(
+        category==="INFLUENCER"
+    ){
+
+        label =
+        "Post URL";
+
+    }
+
+
+
+    const proof =
+    prompt(
+        label
     );
 
 
 
-    alert(
-        "Submitted"
+    if(!proof){
+
+        return;
+
+    }
+
+
+
+    saveTask(
+        taskId,
+        proof
     );
 
 }
@@ -335,106 +473,206 @@ async function submitJob(
 
 
 
-function bottomNav(){
 
-return `
 
-<div class="
-    fixed
-    bottom-0
-    left-0
-    right-0
-    bg-white
-    border-t
-">
+async function saveTask(
+    taskId,
+    proof
+){
 
-    <div class="
-        grid
-        grid-cols-4
-        text-center
-    ">
+    document
+    .getElementById(
+        "loader"
+    )
+    .style.display =
+    "flex";
 
-        <button
-            onclick="
-                location='dashboard.html'
-            "
+
+
+    try{
+
+        await fetch(
+
+            API+
+            "/api/users/submit-task",
+
+            {
+
+                method:"POST",
+
+
+                headers:{
+
+                    Authorization:
+                    "Bearer "+
+                    token,
+
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+
+                body:
+                JSON.stringify({
+
+                    task_id:
+                    taskId,
+
+
+                    proof
+
+                })
+
+            }
+
+        );
+
+
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        popup(
+            "Job submitted successfully"
+        );
+
+
+
+    }catch(error){
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        popup(
+            "Connection failed"
+        );
+
+    }
+
+}
+
+
+
+
+
+
+function popup(
+    message
+){
+
+    document
+    .getElementById(
+        "modal"
+    )
+    .innerHTML = `
+
+        <div class="
+            fixed
+            inset-0
+            bg-black/20
+            flex
+            items-center
+            justify-center
+            z-50
+        ">
+
+
+            <div class="
+                modal
+                bg-white
+                rounded-[28px]
+                p-6
+                text-center
+                w-[90%]
+                max-w-sm
+            ">
+
+                <div class="
+                    text-5xl
+                    mb-4
+                ">
+                    ✅
+                </div>
+
+
+                <p class="
+                    font-bold
+                ">
+                    ${message}
+                </p>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+
+    setTimeout(
+
+        ()=>{
+
+            document
+            .getElementById(
+                "modal"
+            )
+            .innerHTML =
+            "";
+
+        },
+
+        2000
+
+    );
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
             class="
-                nav-item
-                p-3
+                nav-btn
+                text-2xl
             "
         >
-            <div class="
-                nav-icon
-                text-2xl
-            ">
-                🏠
-            </div>
-        </button>
 
+            ${icon}
 
+        </a>
 
-        <button
-            class="
-                nav-item
-                active
-                p-3
-            "
-        >
-            <div class="
-                nav-icon
-                text-2xl
-            ">
-                💰
-            </div>
-        </button>
-
-
-
-        <button
-            onclick="
-                location='notifications.html'
-            "
-            class="
-                nav-item
-                p-3
-            "
-        >
-            <div class="
-                nav-icon
-                text-2xl
-            ">
-                🔔
-            </div>
-        </button>
-
-
-
-        <button
-            onclick="
-                location='profile.html'
-            "
-            class="
-                nav-item
-                p-3
-            "
-        >
-            <div class="
-                nav-icon
-                text-2xl
-            ">
-                👤
-            </div>
-        </button>
-
-    </div>
-
-</div>
-
-`;
+    `;
 
 }
 
 </script>
 
 </body>
-</html>
+    </html>
