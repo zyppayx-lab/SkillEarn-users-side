@@ -1,93 +1,436 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/style.css">
-<title>Jobs</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Jobs</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<h2 class="title">Available Jobs</h2>
+<body class="bg-slate-100 pb-24">
 
-<div id="jobs"></div>
+<div id="screen"></div>
 
-<div class="nav">
-  <button onclick="nav('dashboard')">Home</button>
-  <button class="active">Jobs</button>
-  <button onclick="nav('notifications')">Notifications</button>
-  <button onclick="nav('profile')">Profile</button>
+
+
+<!-- NAV -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
+
+    <div class="grid grid-cols-4 text-center">
+
+        <button onclick="window.location='dashboard.html'" class="p-4">
+            Dashboard
+        </button>
+
+        <button class="p-4 text-blue-600 font-bold">
+            Jobs
+        </button>
+
+        <button onclick="window.location='notifications.html'" class="p-4">
+            Notifications
+        </button>
+
+        <button onclick="window.location='profile.html'" class="p-4">
+            Profile
+        </button>
+
+    </div>
+
 </div>
 
-<script src="../js/core.js"></script>
+
 
 <script>
-let submittedTasks = JSON.parse(localStorage.getItem("submitted") || "[]");
 
-async function loadJobs() {
-  const jobs = await apiRequest("/api/users/tasks");
+const API =
+"https://skillearn.onrender.com";
 
-  const container = document.getElementById("jobs");
-  container.innerHTML = "";
 
-  jobs.forEach(job => {
-    const disabled = submittedTasks.includes(job.id);
+const token =
+localStorage.getItem(
+    "token"
+);
 
-    container.innerHTML += `
-      <div class="card">
-        <h3>${job.title}</h3>
-        <p>Reward: ${job.reward}</p>
 
-        <input type="text" placeholder="Proof text" id="proof-${job.id}">
-        <input type="file" id="file-${job.id}">
-
-        <button ${disabled ? "disabled" : ""} onclick="submit(${job.id}, this)">
-          ${disabled ? "Submitted" : "Submit"}
-        </button>
-      </div>
-    `;
-  });
-}
-
-async function submit(taskId, btn) {
-  showLoader(btn);
-
-  try {
-    const form = new FormData();
-    form.append("task_id", taskId);
-    form.append("proof_text", document.getElementById(`proof-${taskId}`).value);
-
-    const file = document.getElementById(`file-${taskId}`).files[0];
-    if (file) form.append("screenshot", file);
-
-    const token = localStorage.getItem("token");
-
-    await fetch(API_BASE + "/api/submissions/create", {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token
-      },
-      body: form
-    });
-
-    submittedTasks.push(taskId);
-    localStorage.setItem("submitted", JSON.stringify(submittedTasks));
-
-    btn.innerText = "Submitted";
-    btn.disabled = true;
-
-  } catch(e){
-    alert("Submission failed");
-    hideLoader(btn);
-  }
-}
-
-function nav(page){
-  window.location.href = page + ".html";
-}
 
 loadJobs();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+async function loadJobs(){
+
+    loader();
+
+
+    const res =
+    await fetch(
+        API+"/api/users/tasks",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+    const tasks =
+    await res.json();
+
+
+
+
+    screen.innerHTML=
+    tasks.map(
+        task=>`
+
+        <div class="
+            bg-white
+            rounded-3xl
+            p-5
+            shadow
+            m-4
+        ">
+
+            <h2 class="
+                text-xl
+                font-bold
+                mb-2
+            ">
+                ${task.title}
+            </h2>
+
+
+
+            <p class="
+                text-slate-500
+                mb-3
+            ">
+                ${task.description}
+            </p>
+
+
+
+            <p class="
+                font-bold
+                text-blue-600
+                mb-4
+            ">
+                Reward:
+                ${task.reward}
+            </p>
+
+
+
+
+            ${renderProofField(task)}
+
+
+
+
+            <button
+                id="btn_${task.id}"
+
+                onclick="
+                    submitTask(
+                        ${task.id}
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-xl
+                    mt-4
+                "
+            >
+
+                Submit Proof
+
+            </button>
+
+        </div>
+
+        `
+    ).join("");
+
+}
+
+
+
+
+function renderProofField(task){
+
+    const type =
+    (
+        task.category ||
+        task.type ||
+        ""
+    ).toLowerCase();
+
+
+
+
+    if(
+        type.includes(
+            "survey"
+        )
+    ){
+
+        return `
+
+            <input
+                id="proof_${task.id}"
+
+                placeholder="
+                    Survey completion ID
+                "
+
+                class="
+                    w-full
+                    border
+                    p-4
+                    rounded-xl
+                "
+            >
+
+        `;
+
+    }
+
+
+
+
+    if(
+        type.includes(
+            "social"
+        ) ||
+
+        type.includes(
+            "youtube"
+        ) ||
+
+        type.includes(
+            "telegram"
+        )
+    ){
+
+        return `
+
+            <input
+                id="proof_${task.id}"
+
+                placeholder="
+                    Username or profile link
+                "
+
+                class="
+                    w-full
+                    border
+                    p-4
+                    rounded-xl
+                "
+            >
+
+        `;
+
+    }
+
+
+
+
+    if(
+        type.includes(
+            "app"
+        ) ||
+
+        type.includes(
+            "screenshot"
+        )
+    ){
+
+        return `
+
+            <input
+                id="proof_${task.id}"
+
+                placeholder="
+                    Screenshot URL
+                "
+
+                class="
+                    w-full
+                    border
+                    p-4
+                    rounded-xl
+                "
+            >
+
+        `;
+
+    }
+
+
+
+
+    return `
+
+        <textarea
+            id="proof_${task.id}"
+
+            placeholder="
+                Enter proof
+            "
+
+            class="
+                w-full
+                border
+                p-4
+                rounded-xl
+            "
+        ></textarea>
+
+    `;
+
+}
+
+
+
+
+async function submitTask(
+    taskId
+){
+
+    const btn =
+    document.getElementById(
+        "btn_"+taskId
+    );
+
+
+
+    const proof =
+    document.getElementById(
+        "proof_"+taskId
+    ).value;
+
+
+
+    btn.disabled=true;
+
+
+    btn.innerHTML=
+    "Submitting...";
+
+
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+
+            "/api/users/submit-task",
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    Authorization:
+                    "Bearer "+token
+
+                },
+
+                body:JSON.stringify({
+
+                    task_id:taskId,
+
+                    proof:proof
+
+                })
+
+            }
+        );
+
+
+
+        const data =
+        await res.json();
+
+
+
+        alert(
+            data.message
+        );
+
+
+
+        btn.innerHTML=
+        "Submitted ✓";
+
+
+
+    }catch(err){
+
+        alert(
+            "Network error"
+        );
+
+
+
+        btn.disabled=false;
+
+
+        btn.innerHTML=
+        "Submit Proof";
+
+    }
+
+}
+
+
 </script>
 
 </body>
-</html>
+  </html>
