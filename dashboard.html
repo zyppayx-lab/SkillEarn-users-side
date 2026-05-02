@@ -10,34 +10,34 @@
 
 <style>
 
-.nav-item{
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
     transition:.25s;
 }
 
-.nav-item.active{
-    transform:scale(1.15);
+.nav-btn:active{
+    transform:scale(.85);
 }
 
-.nav-icon{
-    transition:.25s;
+.float-card{
+    animation:floatCard 3s infinite;
 }
 
-.nav-item.active .nav-icon{
-    animation:bounce .4s;
-}
-
-@keyframes bounce{
+@keyframes floatCard{
 
     0%{
-        transform:scale(1);
+        transform:translateY(0);
     }
 
     50%{
-        transform:scale(1.35);
+        transform:translateY(-3px);
     }
 
     100%{
-        transform:scale(1);
+        transform:translateY(0);
     }
 
 }
@@ -46,9 +46,38 @@
 
 </head>
 
-<body class="bg-slate-100 pb-24">
+
+<body class="bg-slate-100">
 
 <div id="app"></div>
+
+<div
+    id="loader"
+
+    class="
+        fixed
+        inset-0
+        bg-black/10
+        z-50
+        flex
+        items-center
+        justify-center
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
+</div>
+
 
 
 <script>
@@ -66,20 +95,22 @@ localStorage.getItem(
 );
 
 
-const app =
-document.getElementById(
-    "app"
-);
+const user =
+JSON.parse(
 
+    localStorage.getItem(
+        "user"
+    )
+
+);
 
 
 if(!token){
 
-    window.location=
+    window.location =
     "login.html";
 
 }
-
 
 
 
@@ -88,62 +119,62 @@ load();
 
 
 
-function loader(){
+function currency(){
 
-    app.innerHTML=`
+    if(
+        user.country ===
+        "NG"
+    ){
 
-        <div class="
-            min-h-screen
-            flex
-            justify-center
-            items-center
-        ">
+        return "₦";
 
-            <div class="
-                w-12
-                h-12
-                border-4
-                border-blue-600
-                border-t-transparent
-                rounded-full
-                animate-spin
-            "></div>
+    }
 
-        </div>
 
-    `;
+    return "$";
 
 }
 
 
 
 
+
+
 async function load(){
-
-    loader();
-
-
 
     try{
 
         const res =
         await fetch(
+
             API+
             "/api/users/dashboard",
+
             {
 
                 headers:{
                     Authorization:
-                    "Bearer "+token
+                    "Bearer "+
+                    token
                 }
 
             }
+
         );
 
 
 
         const data =
         await res.json();
+
+
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
 
 
 
@@ -155,15 +186,8 @@ async function load(){
 
     }catch(error){
 
-        console.error(
-            error
-        );
-
-
-
-        alert(
-            "Failed to load dashboard"
-        );
+        window.location =
+        "login.html";
 
     }
 
@@ -172,27 +196,59 @@ async function load(){
 
 
 
+
+
 function render(
     data
 ){
 
-    app.innerHTML=`
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
+            pb-28
             p-4
-            max-w-6xl
-            mx-auto
         ">
+
+
+
+
+            <!-- TOP -->
+            <div class="
+                mb-5
+            ">
+
+                <p class="
+                    text-slate-500
+                ">
+                    Welcome back 👋
+                </p>
+
+
+                <h2 class="
+                    text-2xl
+                    font-bold
+                ">
+                    ${user.name}
+                </h2>
+
+            </div>
+
 
 
 
             <!-- WALLET -->
             <div class="
+                float-card
                 bg-blue-600
                 text-white
-                rounded-3xl
+                rounded-[28px]
                 p-8
                 text-center
+                shadow-xl
                 mb-5
             ">
 
@@ -201,137 +257,129 @@ function render(
                 </p>
 
 
-
-                <h2 class="
+                <h1 class="
                     text-4xl
                     font-bold
                     mt-2
                 ">
 
-                    ${data.profile.balance}
+                    ${currency()}
+                    ${Number(
+                        data.profile.balance
+                    ).toLocaleString()}
 
-                </h2>
+                </h1>
 
             </div>
 
 
 
 
-            <!-- SHORTCUTS -->
+            <!-- ACTIONS -->
             <div class="
                 grid
-                grid-cols-2
-                gap-4
+                grid-cols-4
+                gap-3
+                mb-6
+            ">
+
+                ${action(
+                    "💰",
+                    "Withdraw",
+                    "withdraw.html"
+                )}
+
+                ${action(
+                    "🎁",
+                    "Refer",
+                    "referrals.html"
+                )}
+
+                ${action(
+                    "💼",
+                    "Jobs",
+                    "jobs.html"
+                )}
+
+                ${action(
+                    "👤",
+                    "Profile",
+                    "profile.html"
+                )}
+
+            </div>
+
+
+
+
+            <!-- STATS -->
+            <div class="
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
                 mb-5
             ">
 
-                <button
-                    id="withdrawBtn"
+                <div class="
+                    flex
+                    justify-between
+                ">
 
-                    class="
-                        bg-white
-                        rounded-3xl
-                        p-5
-                        shadow
-                        font-bold
-                    "
-                >
-
-                    Withdraw
-
-                </button>
+                    <span>
+                        Available Jobs
+                    </span>
 
 
+                    <b class="
+                        text-blue-600
+                    ">
+                        ${data.available_tasks}
+                    </b>
 
-
-                <button
-                    id="jobsBtn"
-
-                    class="
-                        bg-white
-                        rounded-3xl
-                        p-5
-                        shadow
-                        font-bold
-                    "
-                >
-
-                    Jobs
-
-                </button>
-
-
-
-
-                <button
-                    id="referBtn"
-
-                    class="
-                        bg-white
-                        rounded-3xl
-                        p-5
-                        shadow
-                        font-bold
-                    "
-                >
-
-                    Refer
-
-                </button>
-
-
-
-
-                <button
-                    id="historyBtn"
-
-                    class="
-                        bg-white
-                        rounded-3xl
-                        p-5
-                        shadow
-                        font-bold
-                    "
-                >
-
-                    History
-
-                </button>
+                </div>
 
             </div>
 
 
 
 
-            <!-- JOB COUNT -->
+            <!-- ACTIVITY -->
             <div class="
                 bg-white
-                rounded-3xl
-                p-6
+                rounded-[28px]
+                p-5
                 shadow
-                mb-8
             ">
 
-                <p class="
-                    text-slate-500
-                ">
-                    Available Jobs
-                </p>
-
-
-
-                <h2 class="
-                    text-3xl
+                <h3 class="
                     font-bold
-                    text-blue-600
-                    mt-2
+                    mb-4
                 ">
+                    Recent Activity
+                </h3>
 
-                    ${data.available_tasks}
 
-                </h2>
+
+                ${activity(
+                    "💼",
+                    "Jobs updated"
+                )}
+
+
+                ${activity(
+                    "🎁",
+                    "Referral rewards"
+                )}
+
+
+                ${activity(
+                    "💰",
+                    "Withdrawal history"
+                )}
 
             </div>
+
 
 
 
@@ -347,188 +395,155 @@ function render(
             left-0
             right-0
             bg-white
+            shadow-2xl
             border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
         ">
 
-            <div class="
-                grid
-                grid-cols-4
-                text-center
-            ">
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
 
+            ${nav(
+                "💰",
+                "jobs.html"
+            )}
 
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
 
-                <button
-                    id="navHome"
-
-                    class="
-                        nav-item
-                        active
-                        p-3
-                    "
-                >
-
-                    <div class="
-                        nav-icon
-                        text-2xl
-                    ">
-                        🏠
-                    </div>
-
-                </button>
-
-
-
-
-                <button
-                    id="navJobs"
-
-                    class="
-                        nav-item
-                        p-3
-                    "
-                >
-
-                    <div class="
-                        nav-icon
-                        text-2xl
-                    ">
-                        💰
-                    </div>
-
-                </button>
-
-
-
-
-                <button
-                    id="navNotifications"
-
-                    class="
-                        nav-item
-                        p-3
-                    "
-                >
-
-                    <div class="
-                        nav-icon
-                        text-2xl
-                    ">
-                        🔔
-                    </div>
-
-                </button>
-
-
-
-
-                <button
-                    id="navProfile"
-
-                    class="
-                        nav-item
-                        p-3
-                    "
-                >
-
-                    <div class="
-                        nav-icon
-                        text-2xl
-                    ">
-                        👤
-                    </div>
-
-                </button>
-
-            </div>
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
 
         </div>
 
     `;
-
-
-
-
-    bindEvents();
 
 }
 
 
 
 
-function bindEvents(){
-
-    document
-    .getElementById(
-        "withdrawBtn"
-    )
-    .onclick =
-    ()=>window.location=
-    "withdraw.html";
 
 
+function action(
+    icon,
+    name,
+    page
+){
 
-    document
-    .getElementById(
-        "jobsBtn"
-    )
-    .onclick =
-    ()=>window.location=
-    "jobs.html";
+    return `
+
+        <a
+
+            href="
+                ${page}
+            "
+
+            class="
+                bg-white
+                rounded-3xl
+                shadow
+                p-4
+                text-center
+            "
+        >
+
+            <div class="
+                text-2xl
+                mb-1
+            ">
+                ${icon}
+            </div>
 
 
+            <div class="
+                text-sm
+                font-semibold
+            ">
+                ${name}
+            </div>
 
-    document
-    .getElementById(
-        "referBtn"
-    )
-    .onclick =
-    ()=>window.location=
-    "referrals.html";
+        </a>
 
+    `;
 
-
-    document
-    .getElementById(
-        "historyBtn"
-    )
-    .onclick =
-    ()=>window.location=
-    "transactions.html";
-
-
-
-    document
-    .getElementById(
-        "navJobs"
-    )
-    .onclick =
-    ()=>window.location=
-    "jobs.html";
+}
 
 
 
-    document
-    .getElementById(
-        "navNotifications"
-    )
-    .onclick =
-    ()=>window.location=
-    "notifications.html";
 
 
 
-    document
-    .getElementById(
-        "navProfile"
-    )
-    .onclick =
-    ()=>window.location=
-    "profile.html";
+function activity(
+    icon,
+    text
+){
+
+    return `
+
+        <div class="
+            flex
+            gap-3
+            mb-3
+        ">
+
+            <span>
+                ${icon}
+            </span>
+
+
+            <span>
+                ${text}
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="
+                ${page}
+            "
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    `;
 
 }
 
 </script>
 
 </body>
-</html>
+    </html>
