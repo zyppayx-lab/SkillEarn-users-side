@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>SkillEarn Referrals</title>
+<title>Referrals • SkillEarn</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,11 +12,14 @@
 
 <body class="bg-slate-100 pb-24">
 
-<div id="screen"></div>
+<div id="app"></div>
 
 
 
 <script>
+
+"use strict";
+
 
 const API =
 "https://skillearn.onrender.com";
@@ -28,11 +31,9 @@ localStorage.getItem(
 );
 
 
-const user =
-JSON.parse(
-    localStorage.getItem(
-        "user"
-    ) || "{}"
+const app =
+document.getElementById(
+    "app"
 );
 
 
@@ -47,14 +48,14 @@ if(!token){
 
 
 
-loadReferral();
+load();
 
 
 
 
 function loader(){
 
-    screen.innerHTML=`
+    app.innerHTML=`
 
         <div class="
             min-h-screen
@@ -82,119 +83,173 @@ function loader(){
 
 
 
-async function loadReferral(){
+async function load(){
 
     loader();
 
 
 
+    try{
 
-    const walletRes =
-    await fetch(
-        API+"/api/users/wallet",
-        {
+        const walletRes =
+        await fetch(
+            API+
+            "/api/users/wallet",
+            {
 
-            headers:{
-                Authorization:
-                "Bearer "+token
+                headers:{
+                    Authorization:
+                    "Bearer "+token
+                }
+
             }
+        );
+
+
+
+        const wallet =
+        await walletRes.json();
+
+
+
+
+        const refsRes =
+        await fetch(
+            API+
+            "/api/users/referrals",
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+token
+                }
+
+            }
+        );
+
+
+
+        const referrals =
+        await refsRes.json();
+
+
+
+
+        render(
+            wallet,
+            referrals
+        );
+
+
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+
+
+        alert(
+            "Failed to load"
+        );
+
+    }
+
+}
+
+
+
+
+function render(
+    wallet,
+    referrals
+){
+
+    let total = 0;
+
+
+    let rows = "";
+
+
+
+    referrals.forEach(
+        row=>{
+
+            total +=
+            Number(
+                row.amount
+            );
+
+
+
+            rows += `
+
+                <div class="
+                    bg-white
+                    rounded-3xl
+                    p-5
+                    shadow
+                    mb-4
+                ">
+
+                    <p class="
+                        font-bold
+                        mb-1
+                    ">
+                        ${row.name}
+                    </p>
+
+
+
+                    <p class="
+                        text-blue-600
+                        font-bold
+                        mb-1
+                    ">
+                        +
+                        ${row.amount}
+                        ${row.currency}
+                    </p>
+
+
+
+                    <p class="
+                        text-slate-500
+                    ">
+                        ${row.status}
+                    </p>
+
+                </div>
+
+            `;
 
         }
     );
 
 
 
-    const refRes =
-    await fetch(
-        API+"/api/users/referrals",
-        {
-
-            headers:{
-                Authorization:
-                "Bearer "+token
-            }
-
-        }
-    );
-
-
-
-
-    const wallet =
-    await walletRes.json();
-
-
-    const referrals =
-    await refRes.json();
-
-
-
-
-    const currency =
-    wallet.country==="NG"
-    ? "₦"
-    : "$";
-
-
-
-    const totalEarnings =
-    referrals.reduce(
-        (
-            total,
-            item
-        )=>
-
-        total+
-        Number(
-            item.amount
-        ),
-
-        0
-    );
-
-
-
-    const referralLink =
-    location.origin+
-    "/register.html?ref="+
-    wallet.referral_code;
-
-
-
-
-    screen.innerHTML=`
+    app.innerHTML=`
 
         <div class="
-            max-w-5xl
-            mx-auto
             p-4
+            max-w-4xl
+            mx-auto
         ">
 
 
 
-            <!-- HEADER -->
             <div class="
                 bg-blue-600
                 text-white
                 rounded-3xl
                 p-6
                 mb-5
+                text-center
             ">
 
-                <h1 class="
-                    text-2xl
-                    font-bold
-                    mb-4
-                ">
-                    Referral Program
-                </h1>
-
-
-
-                <p class="
-                    mb-2
-                ">
-                    Referral Code:
+                <p>
+                    Referral Code
                 </p>
 
 
@@ -202,315 +257,140 @@ async function loadReferral(){
                 <h2 class="
                     text-2xl
                     font-bold
+                    mt-2
+                    mb-4
                 ">
                     ${wallet.referral_code}
                 </h2>
 
-            </div>
 
 
 
-
-            <!-- STATS -->
-            <div class="
-                grid
-                md:grid-cols-2
-                gap-4
-                mb-5
-            ">
-
-                <div class="
-                    bg-white
-                    rounded-3xl
-                    p-6
-                    shadow
-                ">
-
-                    <p class="
-                        text-slate-500
-                        mb-2
-                    ">
-                        Total Referrals
-                    </p>
-
-
-
-                    <h2 class="
-                        text-3xl
-                        font-bold
-                    ">
-                        ${referrals.length}
-                    </h2>
-
-                </div>
-
-
-
-
-                <div class="
-                    bg-white
-                    rounded-3xl
-                    p-6
-                    shadow
-                ">
-
-                    <p class="
-                        text-slate-500
-                        mb-2
-                    ">
-                        Total Earnings
-                    </p>
-
-
-
-                    <h2 class="
-                        text-3xl
-                        font-bold
-                        text-blue-600
-                    ">
-                        ${currency}
-                        ${totalEarnings}
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-
-
-            <!-- LINK -->
-            <div class="
-                bg-white
-                rounded-3xl
-                p-6
-                shadow
-                mb-5
-            ">
-
-                <input
-                    id="refLink"
-
-                    value="${referralLink}"
+                <button
+                    id="copyBtn"
 
                     class="
-                        w-full
-                        border
-                        p-4
+                        bg-white
+                        text-blue-600
+                        px-6
+                        py-3
                         rounded-xl
-                        mb-4
+                        font-bold
                     "
                 >
 
+                    Copy Code
 
-
-                <div class="
-                    grid
-                    grid-cols-2
-                    gap-4
-                ">
-
-                    <button
-                        onclick="
-                            copyLink()
-                        "
-
-                        class="
-                            bg-blue-600
-                            text-white
-                            py-3
-                            rounded-xl
-                            font-bold
-                        "
-                    >
-
-                        Copy Link
-
-                    </button>
-
-
-
-
-                    <button
-                        onclick="
-                            shareLink()
-                        "
-
-                        class="
-                            border
-                            border-blue-600
-                            text-blue-600
-                            py-3
-                            rounded-xl
-                            font-bold
-                        "
-                    >
-
-                        Share
-
-                    </button>
-
-                </div>
+                </button>
 
             </div>
 
 
 
 
-            <!-- HISTORY -->
             <div class="
                 bg-white
                 rounded-3xl
-                p-6
+                p-5
                 shadow
+                mb-5
             ">
 
-                <h2 class="
-                    text-xl
-                    font-bold
-                    mb-4
+                <p class="
+                    text-slate-500
                 ">
-                    Earnings History
+                    Total Referral Earnings
+                </p>
+
+
+
+                <h2 class="
+                    text-3xl
+                    font-bold
+                    text-blue-600
+                    mt-2
+                ">
+                    ${total}
                 </h2>
 
-
-
-                ${
-                    referrals.length
-                    ?
-
-                    referrals.map(
-                        item=>`
-
-                        <div class="
-                            border-b
-                            py-4
-                        ">
-
-                            <div class="
-                                flex
-                                justify-between
-                                mb-2
-                            ">
-
-                                <p>
-                                    ${item.name}
-                                </p>
-
-
-
-                                <p class="
-                                    font-bold
-                                    text-blue-600
-                                ">
-
-                                    ${
-                                        item.currency
-                                        === "NGN"
-                                        ? "₦"
-                                        : "$"
-                                    }
-
-                                    ${item.amount}
-
-                                </p>
-
-                            </div>
+            </div>
 
 
 
 
-                            <p class="
-                                text-xs
-                                text-slate-400
-                            ">
+            ${rows ||
 
-                                ${
-                                    item.status
-                                }
+            `
 
-                                •
+            <div class="
+                text-center
+                text-slate-500
+                mt-12
+            ">
 
-                                ${
-                                    item.created_at
-                                }
-
-                            </p>
-
-                        </div>
-
-                        `
-                    ).join("")
-
-                    :
-
-                    "No referral earnings yet"
-
-                }
+                No referrals yet
 
             </div>
+
+            `}
 
         </div>
 
     `;
 
+
+
+
+    document
+    .getElementById(
+        "copyBtn"
+    )
+    .addEventListener(
+        "click",
+        copyCode
+    );
+
 }
 
 
 
 
-function copyLink(){
+async function copyCode(){
 
-    refLink.select();
+    const walletRes =
+    await fetch(
+        API+
+        "/api/users/wallet",
+        {
 
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
 
-    document.execCommand(
-        "copy"
+        }
     );
+
+
+
+    const wallet =
+    await walletRes.json();
+
+
+
+    await navigator
+    .clipboard
+    .writeText(
+        wallet.referral_code
+    );
+
 
 
     alert(
-        "Copied"
+        "Referral code copied"
     );
 
 }
-
-
-
-
-async function shareLink(){
-
-    const link =
-    refLink.value;
-
-
-
-    if(
-        navigator.share
-    ){
-
-        await navigator.share({
-
-            title:
-            "Join SkillEarn",
-
-            text:
-            "Earn online with SkillEarn",
-
-            url:link
-
-        });
-
-    }
-
-    else{
-
-        copyLink();
-
-    }
-
-}
-
 
 </script>
 
