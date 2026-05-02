@@ -1,46 +1,448 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/style.css">
-<title>Profile</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Profile</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<div class="card center">
-  <h3 id="name"></h3>
-  <p id="email"></p>
-  <p id="country"></p>
+<body class="bg-slate-100 pb-24">
 
-  <button onclick="logout()" class="danger-btn">Logout</button>
+<div id="screen"></div>
+
+
+
+<!-- NAV -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
+
+    <div class="grid grid-cols-4 text-center">
+
+        <button onclick="goDashboard()" class="p-4">
+            Dashboard
+        </button>
+
+        <button onclick="goJobs()" class="p-4">
+            Jobs
+        </button>
+
+        <button onclick="goNotifications()" class="p-4">
+            Notifications
+        </button>
+
+        <button class="p-4 text-blue-600 font-bold">
+            Profile
+        </button>
+
+    </div>
+
 </div>
 
-<div class="nav">
-  <button onclick="nav('dashboard')">Home</button>
-  <button onclick="nav('jobs')">Jobs</button>
-  <button onclick="nav('notifications')">Notifications</button>
-  <button class="active">Profile</button>
-</div>
 
-<script src="../js/core.js"></script>
 
 <script>
-const user = getUser();
 
-name.innerText = user.name;
-email.innerText = user.email;
-country.innerText = "Country: " + user.country;
+const API =
+"https://skillearn.onrender.com";
 
-function logout(){
-  localStorage.clear();
-  window.location.href = "../login.html";
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+
+loadProfile();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
 }
 
-function nav(p){
-  window.location.href = p + ".html";
+
+
+
+async function loadProfile(){
+
+    loader();
+
+
+
+
+    const walletRes =
+    await fetch(
+        API+"/api/users/wallet",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+    const txRes =
+    await fetch(
+        API+"/api/users/transactions",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+    const refRes =
+    await fetch(
+        API+"/api/users/referrals",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+
+    const wallet =
+    await walletRes.json();
+
+
+    const tx =
+    await txRes.json();
+
+
+    const refs =
+    await refRes.json();
+
+
+
+
+    const currency =
+    wallet.country==="NG"
+    ? "₦"
+    : "$";
+
+
+
+    const referralLink =
+    location.origin+
+    "/register.html?ref="+
+    wallet.referral_code;
+
+
+
+
+    screen.innerHTML=`
+
+        <div class="p-4 max-w-6xl mx-auto">
+
+
+            <!-- WALLET -->
+            <div class="
+                bg-blue-600
+                text-white
+                rounded-3xl
+                p-6
+                mb-5
+            ">
+
+                <p class="mb-2">
+                    Wallet Balance
+                </p>
+
+
+                <h2 class="
+                    text-3xl
+                    font-bold
+                ">
+                    ${currency}
+                    ${wallet.balance}
+                </h2>
+
+
+                <button
+                    onclick="
+                        goWithdraw()
+                    "
+
+                    class="
+                        bg-white
+                        text-blue-600
+                        px-5
+                        py-3
+                        rounded-xl
+                        mt-5
+                        font-bold
+                    "
+                >
+
+                    Withdraw
+
+                </button>
+
+            </div>
+
+
+
+
+            <!-- REFERRAL -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+                mb-5
+            ">
+
+                <h2 class="
+                    text-xl
+                    font-bold
+                    mb-4
+                ">
+                    Referral Program
+                </h2>
+
+
+
+                <input
+                    id="refLink"
+
+                    value="${referralLink}"
+
+                    class="
+                        w-full
+                        border
+                        p-4
+                        rounded-xl
+                        mb-4
+                    "
+                >
+
+
+
+                <button
+                    onclick="
+                        copyReferral()
+                    "
+
+                    class="
+                        w-full
+                        bg-blue-600
+                        text-white
+                        py-3
+                        rounded-xl
+                    "
+                >
+
+                    Copy Referral Link
+
+                </button>
+
+            </div>
+
+
+
+
+            <!-- REFERRALS -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+                mb-5
+            ">
+
+                <h2 class="
+                    text-xl
+                    font-bold
+                    mb-4
+                ">
+                    Referral Earnings
+                </h2>
+
+
+
+                ${
+                    refs.length
+                    ?
+                    refs.map(
+                        item=>`
+
+                        <div class="
+                            border-b
+                            py-3
+                        ">
+
+                            ${item.name}
+                            -
+                            ${item.amount}
+                            ${item.currency}
+
+                        </div>
+
+                        `
+                    ).join("")
+                    :
+                    "No referrals yet"
+                }
+
+            </div>
+
+
+
+
+            <!-- TRANSACTIONS -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+            ">
+
+                <h2 class="
+                    text-xl
+                    font-bold
+                    mb-4
+                ">
+                    Transactions
+                </h2>
+
+
+
+                ${
+                    tx.length
+                    ?
+                    tx.map(
+                        item=>`
+
+                        <div class="
+                            border-b
+                            py-3
+                        ">
+
+                            ${item.type}
+                            -
+                            ${item.amount}
+
+                        </div>
+
+                        `
+                    ).join("")
+                    :
+                    "No transactions"
+                }
+
+            </div>
+
+
+        </div>
+
+    `;
+
 }
+
+
+
+
+function copyReferral(){
+
+    refLink.select();
+
+
+    document.execCommand(
+        "copy"
+    );
+
+
+    alert(
+        "Copied"
+    );
+
+}
+
+
+
+
+function goWithdraw(){
+
+    window.location=
+    "withdraw.html";
+
+}
+
+
+
+
+function goDashboard(){
+
+    window.location=
+    "dashboard.html";
+
+}
+
+
+
+
+function goJobs(){
+
+    window.location=
+    "jobs.html";
+
+}
+
+
+
+
+function goNotifications(){
+
+    window.location=
+    "notifications.html";
+
+}
+
+
 </script>
 
 </body>
-</html>
+  </html>
