@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SkillEarn Referrals</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+
+<body class="bg-slate-100 pb-24">
+
+<div id="screen"></div>
+
+
+
+<script>
+
+const API =
+"https://skillearn.onrender.com";
+
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+const user =
+JSON.parse(
+    localStorage.getItem(
+        "user"
+    ) || "{}"
+);
+
+
+
+if(!token){
+
+    window.location=
+    "login.html";
+
+}
+
+
+
+
+loadReferral();
+
+
+
+
+function loader(){
+
+    screen.innerHTML=`
+
+        <div class="
+            min-h-screen
+            flex
+            justify-center
+            items-center
+        ">
+
+            <div class="
+                w-12
+                h-12
+                border-4
+                border-blue-600
+                border-t-transparent
+                rounded-full
+                animate-spin
+            "></div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+async function loadReferral(){
+
+    loader();
+
+
+
+
+    const walletRes =
+    await fetch(
+        API+"/api/users/wallet",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+    const refRes =
+    await fetch(
+        API+"/api/users/referrals",
+        {
+
+            headers:{
+                Authorization:
+                "Bearer "+token
+            }
+
+        }
+    );
+
+
+
+
+    const wallet =
+    await walletRes.json();
+
+
+    const referrals =
+    await refRes.json();
+
+
+
+
+    const currency =
+    wallet.country==="NG"
+    ? "₦"
+    : "$";
+
+
+
+    const totalEarnings =
+    referrals.reduce(
+        (
+            total,
+            item
+        )=>
+
+        total+
+        Number(
+            item.amount
+        ),
+
+        0
+    );
+
+
+
+    const referralLink =
+    location.origin+
+    "/register.html?ref="+
+    wallet.referral_code;
+
+
+
+
+    screen.innerHTML=`
+
+        <div class="
+            max-w-5xl
+            mx-auto
+            p-4
+        ">
+
+
+
+            <!-- HEADER -->
+            <div class="
+                bg-blue-600
+                text-white
+                rounded-3xl
+                p-6
+                mb-5
+            ">
+
+                <h1 class="
+                    text-2xl
+                    font-bold
+                    mb-4
+                ">
+                    Referral Program
+                </h1>
+
+
+
+                <p class="
+                    mb-2
+                ">
+                    Referral Code:
+                </p>
+
+
+
+                <h2 class="
+                    text-2xl
+                    font-bold
+                ">
+                    ${wallet.referral_code}
+                </h2>
+
+            </div>
+
+
+
+
+            <!-- STATS -->
+            <div class="
+                grid
+                md:grid-cols-2
+                gap-4
+                mb-5
+            ">
+
+                <div class="
+                    bg-white
+                    rounded-3xl
+                    p-6
+                    shadow
+                ">
+
+                    <p class="
+                        text-slate-500
+                        mb-2
+                    ">
+                        Total Referrals
+                    </p>
+
+
+
+                    <h2 class="
+                        text-3xl
+                        font-bold
+                    ">
+                        ${referrals.length}
+                    </h2>
+
+                </div>
+
+
+
+
+                <div class="
+                    bg-white
+                    rounded-3xl
+                    p-6
+                    shadow
+                ">
+
+                    <p class="
+                        text-slate-500
+                        mb-2
+                    ">
+                        Total Earnings
+                    </p>
+
+
+
+                    <h2 class="
+                        text-3xl
+                        font-bold
+                        text-blue-600
+                    ">
+                        ${currency}
+                        ${totalEarnings}
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+
+
+            <!-- LINK -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+                mb-5
+            ">
+
+                <input
+                    id="refLink"
+
+                    value="${referralLink}"
+
+                    class="
+                        w-full
+                        border
+                        p-4
+                        rounded-xl
+                        mb-4
+                    "
+                >
+
+
+
+                <div class="
+                    grid
+                    grid-cols-2
+                    gap-4
+                ">
+
+                    <button
+                        onclick="
+                            copyLink()
+                        "
+
+                        class="
+                            bg-blue-600
+                            text-white
+                            py-3
+                            rounded-xl
+                            font-bold
+                        "
+                    >
+
+                        Copy Link
+
+                    </button>
+
+
+
+
+                    <button
+                        onclick="
+                            shareLink()
+                        "
+
+                        class="
+                            border
+                            border-blue-600
+                            text-blue-600
+                            py-3
+                            rounded-xl
+                            font-bold
+                        "
+                    >
+
+                        Share
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+
+            <!-- HISTORY -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+            ">
+
+                <h2 class="
+                    text-xl
+                    font-bold
+                    mb-4
+                ">
+                    Earnings History
+                </h2>
+
+
+
+                ${
+                    referrals.length
+                    ?
+
+                    referrals.map(
+                        item=>`
+
+                        <div class="
+                            border-b
+                            py-4
+                        ">
+
+                            <div class="
+                                flex
+                                justify-between
+                                mb-2
+                            ">
+
+                                <p>
+                                    ${item.name}
+                                </p>
+
+
+
+                                <p class="
+                                    font-bold
+                                    text-blue-600
+                                ">
+
+                                    ${
+                                        item.currency
+                                        === "NGN"
+                                        ? "₦"
+                                        : "$"
+                                    }
+
+                                    ${item.amount}
+
+                                </p>
+
+                            </div>
+
+
+
+
+                            <p class="
+                                text-xs
+                                text-slate-400
+                            ">
+
+                                ${
+                                    item.status
+                                }
+
+                                •
+
+                                ${
+                                    item.created_at
+                                }
+
+                            </p>
+
+                        </div>
+
+                        `
+                    ).join("")
+
+                    :
+
+                    "No referral earnings yet"
+
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+function copyLink(){
+
+    refLink.select();
+
+
+    document.execCommand(
+        "copy"
+    );
+
+
+    alert(
+        "Copied"
+    );
+
+}
+
+
+
+
+async function shareLink(){
+
+    const link =
+    refLink.value;
+
+
+
+    if(
+        navigator.share
+    ){
+
+        await navigator.share({
+
+            title:
+            "Join SkillEarn",
+
+            text:
+            "Earn online with SkillEarn",
+
+            url:link
+
+        });
+
+    }
+
+    else{
+
+        copyLink();
+
+    }
+
+}
+
+
+</script>
+
+</body>
+</html>
