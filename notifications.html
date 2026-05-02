@@ -3,15 +3,83 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Notifications • SkillEarn</title>
+
+<title>Notifications</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.fade{
+    animation:fade .35s;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
 </head>
 
-<body class="bg-slate-100 pb-24">
+
+<body class="bg-slate-100">
 
 <div id="app"></div>
 
+
+
+<div
+    id="loader"
+
+    class="
+        fixed
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/10
+        z-50
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
+</div>
+
+
+
 <script>
+
+"use strict";
+
 
 const API =
 "https://skillearn.onrender.com";
@@ -23,11 +91,12 @@ localStorage.getItem(
 );
 
 
-const app =
-document.getElementById(
-    "app"
-);
+if(!token){
 
+    location =
+    "login.html";
+
+}
 
 
 
@@ -38,64 +107,396 @@ load();
 
 async function load(){
 
-    const res =
-    await fetch(
-        API+
-        "/api/users/notifications",
-        {
+    try{
 
-            headers:{
-                Authorization:
-                "Bearer "+token
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/notifications",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
             }
 
-        }
-    );
+        );
 
 
 
-    const rows =
-    await res.json();
+        const list =
+        await res.json();
 
 
 
-    let html = "";
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
 
 
 
-    rows.forEach(
-        row=>{
+        render(
+            list
+        );
 
-            html += `
+
+
+    }catch(error){
+
+        location =
+        "login.html";
+
+    }
+
+}
+
+
+
+
+
+
+function render(
+    list
+){
+
+    let content =
+    "";
+
+
+
+    if(
+        !list.length
+    ){
+
+        content = `
+
+            <div class="
+                text-center
+                mt-20
+            ">
 
                 <div class="
-                    bg-white
-                    rounded-3xl
-                    p-5
-                    shadow
+                    text-6xl
                     mb-4
                 ">
-
-                    ${row.message}
-
+                    🔔
                 </div>
 
-            `;
 
-        }
-    );
+                <h3 class="
+                    text-xl
+                    font-bold
+                    mb-2
+                ">
+                    No notifications
+                </h3>
+
+
+                <p class="
+                    text-slate-500
+                ">
+                    New updates will appear here
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+    else{
+
+        content =
+
+        list.map(
+
+            item=>card(
+                item
+            )
+
+        ).join(
+            ""
+        );
+
+    }
 
 
 
-    app.innerHTML=`
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
             p-4
+            pb-28
         ">
 
-            ${html}
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+                Notifications
+            </h1>
+
+
+
+            ${content}
 
         </div>
+
+
+
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
+
+            ${nav(
+                "💰",
+                "jobs.html"
+            )}
+
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
+
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function card(
+    item
+){
+
+    const text =
+
+        item.message ||
+
+        item.title ||
+
+        "Notification";
+
+
+
+    return `
+
+        <div class="
+            fade
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
+
+
+
+
+            <div class="
+                flex
+                gap-4
+            ">
+
+
+
+
+                <div class="
+                    text-2xl
+                ">
+                    🔔
+                </div>
+
+
+
+
+                <div class="
+                    flex-1
+                ">
+
+
+
+
+                    <p class="
+                        font-semibold
+                        mb-2
+                    ">
+
+                        ${text}
+
+                    </p>
+
+
+
+
+                    <p class="
+                        text-slate-500
+                        text-sm
+                    ">
+
+                        ${timeAgo(
+                            item.created_at
+                        )}
+
+                    </p>
+
+
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function timeAgo(
+    date
+){
+
+    if(!date){
+
+        return "Just now";
+
+    }
+
+
+
+    const diff =
+
+    Math.floor(
+
+        (
+
+            new Date() -
+
+            new Date(
+                date
+            )
+
+        ) / 1000
+
+    );
+
+
+
+    if(
+        diff < 60
+    ){
+
+        return
+        "Just now";
+
+    }
+
+
+
+    if(
+        diff < 3600
+    ){
+
+        return
+        Math.floor(
+            diff/60
+        )+
+        " mins ago";
+
+    }
+
+
+
+    if(
+        diff < 86400
+    ){
+
+        return
+        Math.floor(
+            diff/3600
+        )+
+        " hrs ago";
+
+    }
+
+
+
+    return
+    Math.floor(
+        diff/86400
+    )+
+    " days ago";
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
 
     `;
 
@@ -104,4 +505,4 @@ async function load(){
 </script>
 
 </body>
-</html>
+    </html>
