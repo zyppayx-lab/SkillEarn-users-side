@@ -4,17 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Profile • SkillEarn</title>
+<title>Profile</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.card{
+    animation:slide .35s;
+}
+
+@keyframes slide{
+
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
 </head>
 
-<body class="bg-slate-100 pb-24">
+
+<body class="bg-slate-100">
 
 <div id="app"></div>
 
 
+
+<div
+    id="loader"
+
+    class="
+        fixed
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/10
+        z-50
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
+</div>
+
+
+
 <script>
+
+"use strict";
+
 
 const API =
 "https://skillearn.onrender.com";
@@ -26,11 +91,25 @@ localStorage.getItem(
 );
 
 
-const app =
-document.getElementById(
-    "app"
+const user =
+JSON.parse(
+
+    localStorage.getItem(
+        "user"
+    )
+
 );
 
+
+if(
+    !token ||
+    !user
+){
+
+    location =
+    "login.html";
+
+}
 
 
 
@@ -39,81 +118,332 @@ load();
 
 
 
+function symbol(){
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+
+    return "$";
+
+}
+
+
+
+
+
+
 async function load(){
 
-    const res =
-    await fetch(
-        API+
-        "/api/users/wallet",
-        {
+    try{
 
-            headers:{
-                Authorization:
-                "Bearer "+token
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/wallet",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
             }
 
-        }
-    );
+        );
 
 
 
-    const user =
-    await res.json();
+        const wallet =
+        await res.json();
 
 
 
-    app.innerHTML=`
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render(
+            wallet
+        );
+
+
+
+    }catch(error){
+
+        location =
+        "login.html";
+
+    }
+
+}
+
+
+
+
+
+
+function render(
+    wallet
+){
+
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
             p-4
+            pb-28
         ">
 
+
+
+
+            <!-- TOP -->
             <div class="
-                bg-white
-                rounded-3xl
-                p-6
-                shadow
+                text-center
+                mb-6
             ">
+
+                <div class="
+                    w-24
+                    h-24
+                    rounded-full
+                    bg-blue-600
+                    mx-auto
+                    text-white
+                    flex
+                    items-center
+                    justify-center
+                    text-3xl
+                    font-bold
+                    mb-3
+                ">
+
+                    ${user.name
+                        .charAt(0)
+                        .toUpperCase()}
+
+                </div>
+
+
 
                 <h1 class="
                     text-2xl
                     font-bold
-                    mb-5
                 ">
-                    Profile
+
+                    ${user.name}
+
                 </h1>
 
+            </div>
 
 
-                <p class="
-                    mb-3
-                ">
-                    Country:
-                    ${user.country}
+
+
+            <!-- WALLET -->
+            <div class="
+                card
+                bg-blue-600
+                text-white
+                rounded-[28px]
+                p-6
+                text-center
+                shadow-xl
+                mb-5
+            ">
+
+                <p>
+                    Wallet Balance
                 </p>
 
 
 
-                <p class="
-                    mb-3
+                <h2 class="
+                    text-3xl
+                    font-bold
+                    mt-2
                 ">
-                    Balance:
-                    ${user.balance}
-                </p>
+
+                    ${symbol()}
+                    ${Number(
+                        wallet.balance
+                    ).toLocaleString()}
+
+                </h2>
+
+            </div>
 
 
 
-                <p class="
-                    mb-6
+
+            <!-- DETAILS -->
+            <div class="
+                card
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
+                mb-5
+            ">
+
+                ${row(
+                    "User ID",
+                    user.id
+                )}
+
+                ${row(
+                    "Full Name",
+                    user.name
+                )}
+
+                ${row(
+                    "Email",
+                    user.email
+                )}
+
+                ${row(
+                    "Country",
+                    wallet.country
+                )}
+
+                ${row(
+                    "Currency",
+                    symbol()
+                )}
+
+            </div>
+
+
+
+
+            <!-- REFERRAL -->
+            <div class="
+                card
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
+                mb-5
+            ">
+
+                <div class="
+                    flex
+                    justify-between
+                    items-center
                 ">
-                    Referral:
-                    ${user.referral_code}
-                </p>
 
+                    <div>
+
+                        <p class="
+                            text-slate-500
+                            text-sm
+                        ">
+                            Referral Code
+                        </p>
+
+
+
+                        <b>
+
+                            ${wallet.referral_code}
+
+                        </b>
+
+                    </div>
+
+
+
+                    <button
+
+                        onclick="
+                            copyReferral()
+                        "
+
+                        class="
+                            bg-blue-600
+                            text-white
+                            px-4
+                            py-2
+                            rounded-xl
+                        "
+                    >
+
+                        Copy
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+
+            <!-- ACTIONS -->
+            <div class="
+                grid
+                gap-3
+            ">
+
+                <a
+
+                    href="
+                        withdraw.html
+                    "
+
+                    class="
+                        bg-white
+                        p-4
+                        rounded-2xl
+                        shadow
+                    "
+                >
+
+                    💰 Withdraw
+
+                </a>
+
+
+
+                <a
+
+                    href="
+                        referrals.html
+                    "
+
+                    class="
+                        bg-white
+                        p-4
+                        rounded-2xl
+                        shadow
+                    "
+                >
+
+                    🎁 Referrals
+
+                </a>
 
 
 
                 <button
+
                     onclick="
                         logout()
                     "
@@ -121,10 +451,8 @@ async function load(){
                     class="
                         bg-red-500
                         text-white
-                        px-6
-                        py-3
-                        rounded-xl
-                        font-bold
+                        p-4
+                        rounded-2xl
                     "
                 >
 
@@ -133,6 +461,48 @@ async function load(){
                 </button>
 
             </div>
+
+
+
+
+        </div>
+
+
+
+
+        <!-- NAV -->
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
+
+            ${nav(
+                "💰",
+                "jobs.html"
+            )}
+
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
+
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
 
         </div>
 
@@ -143,16 +513,108 @@ async function load(){
 
 
 
+
+
+function row(
+    title,
+    value
+){
+
+    return `
+
+        <div class="
+            flex
+            justify-between
+            py-3
+            border-b
+        ">
+
+            <span class="
+                text-slate-500
+            ">
+                ${title}
+            </span>
+
+
+
+            <b>
+                ${value}
+            </b>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function copyReferral(){
+
+    navigator
+    .clipboard
+    .writeText(
+
+        user.referral_code
+
+    );
+
+
+
+    alert(
+        "Referral code copied"
+    );
+
+}
+
+
+
+
+
+
 function logout(){
 
     localStorage.clear();
 
-    location=
+    location =
     "login.html";
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    `;
 
 }
 
 </script>
 
 </body>
-</html>
+    </html>
