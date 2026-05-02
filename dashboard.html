@@ -7,64 +7,54 @@
 <title>SkillEarn Dashboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-</head>
 
+<style>
+
+.nav-item{
+    transition:.25s;
+}
+
+.nav-item.active{
+    transform:scale(1.15);
+}
+
+.nav-icon{
+    transition:.25s;
+}
+
+.nav-item.active .nav-icon{
+    animation:bounce .4s;
+}
+
+@keyframes bounce{
+
+    0%{
+        transform:scale(1);
+    }
+
+    50%{
+        transform:scale(1.35);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+
+}
+
+</style>
+
+</head>
 
 <body class="bg-slate-100 pb-24">
 
-<div id="screen"></div>
-
-
-
-<!-- BOTTOM NAV -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t">
-
-    <div class="grid grid-cols-4 text-center">
-
-        <button
-            class="p-4 text-blue-600 font-bold"
-        >
-            Dashboard
-        </button>
-
-
-
-        <button
-            id="navJobs"
-            onclick="goJobs()"
-            class="p-4"
-        >
-            Jobs
-        </button>
-
-
-
-        <button
-            id="navNotifications"
-            onclick="goNotifications()"
-            class="p-4"
-        >
-            Notifications
-        </button>
-
-
-
-        <button
-            id="navProfile"
-            onclick="goProfile()"
-            class="p-4"
-        >
-            Profile
-        </button>
-
-    </div>
-
-</div>
-
-
+<div id="app"></div>
 
 
 <script>
+
+"use strict";
+
 
 const API =
 "https://skillearn.onrender.com";
@@ -73,6 +63,12 @@ const API =
 const token =
 localStorage.getItem(
     "token"
+);
+
+
+const app =
+document.getElementById(
+    "app"
 );
 
 
@@ -87,14 +83,14 @@ if(!token){
 
 
 
-loadDashboard();
+load();
 
 
 
 
 function loader(){
 
-    screen.innerHTML=`
+    app.innerHTML=`
 
         <div class="
             min-h-screen
@@ -122,7 +118,7 @@ function loader(){
 
 
 
-async function loadDashboard(){
+async function load(){
 
     loader();
 
@@ -132,7 +128,8 @@ async function loadDashboard(){
 
         const res =
         await fetch(
-            API+"/api/users/dashboard",
+            API+
+            "/api/users/dashboard",
             {
 
                 headers:{
@@ -150,207 +147,22 @@ async function loadDashboard(){
 
 
 
+        render(
+            data
+        );
 
-        screen.innerHTML=`
 
-            <div class="
-                p-4
-                max-w-6xl
-                mx-auto
-            ">
 
+    }catch(error){
 
+        console.error(
+            error
+        );
 
-                <!-- WALLET -->
-                <div class="
-                    bg-blue-600
-                    text-white
-                    rounded-3xl
-                    p-8
-                    text-center
-                    mb-5
-                ">
 
-                    <p class="
-                        text-sm
-                        opacity-80
-                        mb-2
-                    ">
-                        Wallet Balance
-                    </p>
-
-
-
-                    <h2 class="
-                        text-4xl
-                        font-bold
-                        mb-2
-                    ">
-
-                        ${data.profile.balance}
-
-                    </h2>
-
-
-
-                    <p class="
-                        opacity-90
-                    ">
-
-                        ${data.profile.name}
-
-                    </p>
-
-                </div>
-
-
-
-
-                <!-- SHORTCUTS -->
-                <div class="
-                    grid
-                    grid-cols-2
-                    md:grid-cols-4
-                    gap-4
-                    mb-5
-                ">
-
-
-
-                    <button
-                        id="withdrawBtn"
-
-                        onclick="
-                            goWithdraw()
-                        "
-
-                        class="
-                            bg-white
-                            rounded-3xl
-                            p-5
-                            shadow
-                            font-bold
-                        "
-                    >
-
-                        Withdraw
-
-                    </button>
-
-
-
-
-                    <button
-                        id="jobsBtn"
-
-                        onclick="
-                            goJobs()
-                        "
-
-                        class="
-                            bg-white
-                            rounded-3xl
-                            p-5
-                            shadow
-                            font-bold
-                        "
-                    >
-
-                        Jobs
-
-                    </button>
-
-
-
-
-                    <button
-                        id="referBtn"
-
-                        onclick="
-                            goReferral()
-                        "
-
-                        class="
-                            bg-white
-                            rounded-3xl
-                            p-5
-                            shadow
-                            font-bold
-                        "
-                    >
-
-                        Refer
-
-                    </button>
-
-
-
-
-                    <button
-                        id="txBtn"
-
-                        onclick="
-                            goTransactions()
-                        "
-
-                        class="
-                            bg-white
-                            rounded-3xl
-                            p-5
-                            shadow
-                            font-bold
-                        "
-                    >
-
-                        History
-
-                    </button>
-
-                </div>
-
-
-
-
-                <!-- STATS -->
-                <div class="
-                    bg-white
-                    rounded-3xl
-                    p-6
-                    shadow
-                ">
-
-                    <p class="
-                        text-slate-500
-                        mb-2
-                    ">
-                        Available Jobs
-                    </p>
-
-
-
-                    <h2 class="
-                        text-3xl
-                        font-bold
-                        text-blue-600
-                    ">
-
-                        ${data.available_tasks}
-
-                    </h2>
-
-                </div>
-
-
-            </div>
-
-        `;
-
-
-
-    }catch(err){
 
         alert(
-            "Network error"
+            "Failed to load dashboard"
         );
 
     }
@@ -360,105 +172,363 @@ async function loadDashboard(){
 
 
 
-function goWithdraw(){
+function render(
+    data
+){
 
-    withdrawBtn.innerHTML=
-    "Loading...";
+    app.innerHTML=`
+
+        <div class="
+            p-4
+            max-w-6xl
+            mx-auto
+        ">
 
 
-    window.location=
+
+            <!-- WALLET -->
+            <div class="
+                bg-blue-600
+                text-white
+                rounded-3xl
+                p-8
+                text-center
+                mb-5
+            ">
+
+                <p>
+                    Wallet Balance
+                </p>
+
+
+
+                <h2 class="
+                    text-4xl
+                    font-bold
+                    mt-2
+                ">
+
+                    ${data.profile.balance}
+
+                </h2>
+
+            </div>
+
+
+
+
+            <!-- SHORTCUTS -->
+            <div class="
+                grid
+                grid-cols-2
+                gap-4
+                mb-5
+            ">
+
+                <button
+                    id="withdrawBtn"
+
+                    class="
+                        bg-white
+                        rounded-3xl
+                        p-5
+                        shadow
+                        font-bold
+                    "
+                >
+
+                    Withdraw
+
+                </button>
+
+
+
+
+                <button
+                    id="jobsBtn"
+
+                    class="
+                        bg-white
+                        rounded-3xl
+                        p-5
+                        shadow
+                        font-bold
+                    "
+                >
+
+                    Jobs
+
+                </button>
+
+
+
+
+                <button
+                    id="referBtn"
+
+                    class="
+                        bg-white
+                        rounded-3xl
+                        p-5
+                        shadow
+                        font-bold
+                    "
+                >
+
+                    Refer
+
+                </button>
+
+
+
+
+                <button
+                    id="historyBtn"
+
+                    class="
+                        bg-white
+                        rounded-3xl
+                        p-5
+                        shadow
+                        font-bold
+                    "
+                >
+
+                    History
+
+                </button>
+
+            </div>
+
+
+
+
+            <!-- JOB COUNT -->
+            <div class="
+                bg-white
+                rounded-3xl
+                p-6
+                shadow
+                mb-8
+            ">
+
+                <p class="
+                    text-slate-500
+                ">
+                    Available Jobs
+                </p>
+
+
+
+                <h2 class="
+                    text-3xl
+                    font-bold
+                    text-blue-600
+                    mt-2
+                ">
+
+                    ${data.available_tasks}
+
+                </h2>
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+        <!-- BOTTOM NAV -->
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+        ">
+
+            <div class="
+                grid
+                grid-cols-4
+                text-center
+            ">
+
+
+
+                <button
+                    id="navHome"
+
+                    class="
+                        nav-item
+                        active
+                        p-3
+                    "
+                >
+
+                    <div class="
+                        nav-icon
+                        text-2xl
+                    ">
+                        🏠
+                    </div>
+
+                </button>
+
+
+
+
+                <button
+                    id="navJobs"
+
+                    class="
+                        nav-item
+                        p-3
+                    "
+                >
+
+                    <div class="
+                        nav-icon
+                        text-2xl
+                    ">
+                        💰
+                    </div>
+
+                </button>
+
+
+
+
+                <button
+                    id="navNotifications"
+
+                    class="
+                        nav-item
+                        p-3
+                    "
+                >
+
+                    <div class="
+                        nav-icon
+                        text-2xl
+                    ">
+                        🔔
+                    </div>
+
+                </button>
+
+
+
+
+                <button
+                    id="navProfile"
+
+                    class="
+                        nav-item
+                        p-3
+                    "
+                >
+
+                    <div class="
+                        nav-icon
+                        text-2xl
+                    ">
+                        👤
+                    </div>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+
+
+    bindEvents();
+
+}
+
+
+
+
+function bindEvents(){
+
+    document
+    .getElementById(
+        "withdrawBtn"
+    )
+    .onclick =
+    ()=>window.location=
     "withdraw.html";
 
-}
 
 
-
-
-function goJobs(){
-
-    const btn =
-    document.getElementById(
+    document
+    .getElementById(
         "jobsBtn"
-    );
-
-
-
-    if(btn){
-
-        btn.innerHTML=
-        "Loading...";
-
-    }
-
-
-
-    navJobs.innerHTML=
-    "Loading...";
-
-
-    window.location=
+    )
+    .onclick =
+    ()=>window.location=
     "jobs.html";
 
-}
 
 
-
-
-function goReferral(){
-
-    referBtn.innerHTML=
-    "Loading...";
-
-
-    window.location=
+    document
+    .getElementById(
+        "referBtn"
+    )
+    .onclick =
+    ()=>window.location=
     "referrals.html";
 
-}
 
 
-
-
-function goTransactions(){
-
-    txBtn.innerHTML=
-    "Loading...";
-
-
-    window.location=
+    document
+    .getElementById(
+        "historyBtn"
+    )
+    .onclick =
+    ()=>window.location=
     "transactions.html";
 
-}
+
+
+    document
+    .getElementById(
+        "navJobs"
+    )
+    .onclick =
+    ()=>window.location=
+    "jobs.html";
 
 
 
-
-function goNotifications(){
-
-    navNotifications.innerHTML=
-    "Loading...";
-
-
-    window.location=
+    document
+    .getElementById(
+        "navNotifications"
+    )
+    .onclick =
+    ()=>window.location=
     "notifications.html";
 
-}
 
 
-
-
-function goProfile(){
-
-    navProfile.innerHTML=
-    "Loading...";
-
-
-    window.location=
+    document
+    .getElementById(
+        "navProfile"
+    )
+    .onclick =
+    ()=>window.location=
     "profile.html";
 
 }
 
-
 </script>
 
 </body>
-  </html>
+</html>
