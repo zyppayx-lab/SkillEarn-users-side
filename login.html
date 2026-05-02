@@ -1,92 +1,184 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<style>
-body {
-  font-family: Arial;
-  background:#f5f9ff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.box {
-  background:white;
-  padding:20px;
-  width:300px;
-  border-radius:10px;
-}
-button {
-  background:#0a66ff;
-  color:white;
-  padding:10px;
-  border:none;
-  width:100%;
-}
-.loader { display:none; text-align:center; }
-</style>
+<title>SkillEarn Login</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
 
-<div class="box">
-  <h3>Login</h3>
+<body class="bg-slate-100 min-h-screen flex justify-center items-center px-4">
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+<div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
 
-  <button onclick="login()">Login</button>
+    <div class="text-center mb-8">
 
-  <div class="loader" id="loader">Loading...</div>
-  <p id="msg"></p>
+        <h1 class="text-3xl font-bold text-blue-600">
+            SkillEarn
+        </h1>
 
-  <p>No account? <a href="register.html">Register</a></p>
+        <p class="text-slate-500 mt-2">
+            Welcome back
+        </p>
+
+    </div>
+
+
+
+    <input
+        id="email"
+        type="email"
+        placeholder="Email address"
+        class="w-full border p-4 rounded-xl mb-4"
+    >
+
+
+
+    <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        class="w-full border p-4 rounded-xl mb-3"
+    >
+
+
+
+    <div class="text-right mb-6">
+
+        <a
+            href="forgot-password.html"
+            class="text-blue-600 text-sm"
+        >
+            Forgot password?
+        </a>
+
+    </div>
+
+
+
+    <button
+        id="loginBtn"
+        onclick="login()"
+        class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold"
+    >
+        Login
+    </button>
+
+
+
+    <div class="text-center mt-6">
+
+        <a
+            href="register.html"
+            class="text-blue-600"
+        >
+            Create account
+        </a>
+
+    </div>
+
 </div>
 
+
+
 <script>
-const API_BASE = "https://skillearn.onrender.com";
 
-function saveAuth(data) {
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("user", JSON.stringify(data.user));
+const API =
+"https://skillearn.onrender.com";
+
+
+
+async function login(){
+
+    loginBtn.disabled=true;
+
+
+    loginBtn.innerHTML=
+    "Signing in...";
+
+
+    try{
+
+        const res =
+        await fetch(
+            API+"/api/auth/login",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    email:email.value,
+
+                    password:password.value
+
+                })
+
+            }
+        );
+
+
+        const data =
+        await res.json();
+
+
+
+        if(data.token){
+
+            localStorage.setItem(
+                "token",
+                data.token
+            );
+
+
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(
+                    data.user
+                )
+            );
+
+
+
+            window.location=
+            "dashboard.html";
+
+        }else{
+
+            alert(
+                data.message
+            );
+
+        }
+
+
+    }catch(err){
+
+        alert(
+            "Network error"
+        );
+
+    }
+
+
+
+    loginBtn.disabled=false;
+
+
+    loginBtn.innerHTML=
+    "Login";
+
 }
 
-async function login() {
-  const loader = document.getElementById("loader");
-  const msg = document.getElementById("msg");
 
-  loader.style.display = "block";
-
-  try {
-    const res = await fetch(API_BASE + "/api/auth/login", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value
-      })
-    });
-
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.message);
-
-    saveAuth(data);
-
-    msg.innerText = "Login successful";
-
-    setTimeout(()=>{
-      window.location.href = "user/dashboard.html";
-    },1000);
-
-  } catch(err){
-    msg.innerText = err.message;
-  }
-
-  loader.style.display = "none";
-}
 </script>
 
 </body>
