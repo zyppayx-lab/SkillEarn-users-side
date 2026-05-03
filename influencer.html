@@ -9,6 +9,11 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+
+body{
+    font-family:sans-serif;
+}
+
 .nav-btn{
     transition:.25s;
 }
@@ -16,6 +21,7 @@
 .nav-btn:active{
     transform:scale(.85);
 }
+
 </style>
 
 </head>
@@ -59,8 +65,16 @@
 "use strict";
 
 
-const API =
-"https://skillearn.onrender.com";
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
 
 
 const token =
@@ -93,78 +107,343 @@ load();
 
 
 
-async function load(){
+function load(){
 
-    try{
+fetch(
 
-        const res =
-        await fetch(
+    "https://skillearn.onrender.com/api/users/influencer-jobs",
 
-            API +
-            "/api/users/influencer-jobs",
+    {
 
-            {
+        headers:{
 
-                headers:{
+            Authorization:
+            "Bearer " +
+            token
 
-                    Authorization:
-                    "Bearer " +
-                    token
+        }
 
-                }
+    }
 
-            }
+)
 
-        );
+.then(
 
+    async res=>{
 
-
-        const list =
+        let list =
         await res.json();
 
 
 
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
-        "none";
-
-
-
-        render(
-
-            Array.isArray(
+        if(
+            !Array.isArray(
                 list
             )
+        ){
 
-            ?
+            list = [];
 
-            list
-
-            :
-
-            []
-
-        );
+        }
 
 
 
-    }catch(error){
-
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
-        "none";
+        loader.remove();
 
 
 
-        render([]);
+        let jobs =
+        "";
+
+
+
+        if(
+            list.length===0
+        ){
+
+            jobs = `
+
+                <div class="
+                    bg-white
+                    rounded-[28px]
+                    p-6
+                    text-center
+                    shadow
+                ">
+
+                    No influencer jobs
+
+                </div>
+
+            `;
+
+        }
+
+        else{
+
+            for(
+
+                let job of list
+
+            ){
+
+                jobs += `
+
+                    <div class="
+                        bg-white
+                        rounded-[28px]
+                        p-5
+                        shadow
+                        mb-4
+                    ">
+
+
+                        <h3 class="
+                            font-bold
+                            text-lg
+                            mb-2
+                        ">
+
+                            ${job.title||"Job"}
+
+                        </h3>
+
+
+
+                        <p class="
+                            text-slate-500
+                            mb-4
+                        ">
+
+                            ${job.description||""}
+
+                        </p>
+
+
+
+                        <div class="
+                            text-blue-600
+                            font-bold
+                            mb-4
+                        ">
+
+                            ${
+                                user.country==="NG"
+                                ? "₦"
+                                : "$"
+                            }
+
+                            ${Number(
+                                job.reward||0
+                            ).toLocaleString()}
+
+                        </div>
+
+
+
+                        <button
+
+                            onclick="
+                                applyJob(
+                                    ${job.id}
+                                )
+                            "
+
+                            class="
+                                w-full
+                                bg-blue-600
+                                text-white
+                                py-3
+                                rounded-2xl
+                            "
+                        >
+
+                            Submit Proof
+
+                        </button>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        app.innerHTML = `
+
+            <div class="
+                p-4
+                pb-28
+            ">
+
+
+                <h1 class="
+                    text-2xl
+                    font-bold
+                    mb-5
+                ">
+
+                    Influencer Jobs
+
+                </h1>
+
+
+
+                <div class="
+                    grid
+                    grid-cols-4
+                    gap-2
+                    mb-5
+                ">
+
+
+                    <a
+                    href="jobs.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Tasks
+                    </a>
+
+
+
+                    <a
+                    href="freelance.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Freelance
+                    </a>
+
+
+
+                    <a
+                    href="hiring.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Hiring
+                    </a>
+
+
+
+                    <a
+                    href="influencer.html"
+                    class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Influencer
+                    </a>
+
+                </div>
+
+
+
+                ${jobs}
+
+            </div>
+
+
+
+
+            <div class="
+                fixed
+                bottom-0
+                left-0
+                right-0
+                bg-white
+                border-t
+                grid
+                grid-cols-4
+                p-3
+                text-center
+            ">
+
+
+                <a
+                href="dashboard.html"
+                class="nav-btn text-2xl">
+                🏠
+                </a>
+
+
+
+                <a
+                href="jobs.html"
+                class="nav-btn text-2xl">
+                💼
+                </a>
+
+
+
+                <a
+                href="notifications.html"
+                class="nav-btn text-2xl">
+                🔔
+                </a>
+
+
+
+                <a
+                href="profile.html"
+                class="nav-btn text-2xl">
+                👤
+                </a>
+
+            </div>
+
+        `;
 
     }
+
+)
+
+.catch(
+
+    ()=>{
+
+        loader.remove();
+
+
+
+        app.innerHTML = `
+
+            <div class="
+                p-5
+            ">
+
+                Could not load influencer jobs
+
+            </div>
+
+        `;
+
+    }
+
+);
 
 }
 
@@ -173,298 +452,96 @@ async function load(){
 
 
 
-function render(
-    jobs
+function applyJob(
+    id
 ){
 
-    document
-    .getElementById(
-        "app"
+    const proof =
+    prompt(
+        "Paste proof link"
+    );
+
+
+    if(
+        !proof
+    ){
+        return;
+    }
+
+
+
+    fetch(
+
+        "https://skillearn.onrender.com/api/users/submit-influencer-proof",
+
+        {
+
+            method:"POST",
+
+            headers:{
+
+                Authorization:
+                "Bearer " +
+                token,
+
+                "Content-Type":
+                "application/json"
+
+            },
+
+            body:
+            JSON.stringify({
+
+                job_id:id,
+
+                proof:proof
+
+            })
+
+        }
+
     )
-    .innerHTML = `
 
-        <div class="
-            p-4
-            pb-28
-        ">
+    .then(
 
+        res=>{
 
+            if(
+                !res.ok
+            ){
 
+                alert(
+                    "Submission failed"
+                );
 
-            <h1 class="
-                text-2xl
-                font-bold
-                mb-5
-            ">
-                Influencer Jobs
-            </h1>
-
-
-
-
-            <div class="
-                flex
-                gap-2
-                mb-5
-                overflow-x-auto
-            ">
-
-                <a
-                    href="jobs.html"
-                    class="
-                        bg-white
-                        px-4
-                        py-2
-                        rounded-full
-                        shadow
-                        whitespace-nowrap
-                    "
-                >
-                    Tasks
-                </a>
-
-
-                <a
-                    href="freelance.html"
-                    class="
-                        bg-white
-                        px-4
-                        py-2
-                        rounded-full
-                        shadow
-                        whitespace-nowrap
-                    "
-                >
-                    Freelance
-                </a>
-
-
-                <a
-                    href="hiring.html"
-                    class="
-                        bg-white
-                        px-4
-                        py-2
-                        rounded-full
-                        shadow
-                        whitespace-nowrap
-                    "
-                >
-                    Hiring
-                </a>
-
-
-                <a
-                    href="influencer.html"
-                    class="
-                        bg-blue-600
-                        text-white
-                        px-4
-                        py-2
-                        rounded-full
-                        whitespace-nowrap
-                    "
-                >
-                    Influencer
-                </a>
-
-            </div>
-
-
-
-
-            ${
-
-                jobs.length
-
-                ?
-
-                jobs.map(
-
-                    job => `
-
-                        <div class="
-                            bg-white
-                            rounded-[28px]
-                            p-5
-                            shadow
-                            mb-4
-                        ">
-
-
-
-
-                            <h3 class="
-                                font-bold
-                                text-lg
-                                mb-2
-                            ">
-
-                                ${job.title || "Untitled"}
-
-                            </h3>
-
-
-
-
-                            <p class="
-                                text-slate-600
-                                mb-4
-                            ">
-
-                                ${job.description || ""}
-
-                            </p>
-
-
-
-
-                            <div class="
-                                text-blue-600
-                                font-bold
-                                mb-4
-                            ">
-
-                                ${
-
-                                    user.country==="NG"
-
-                                    ?
-
-                                    "₦"
-
-                                    :
-
-                                    "$"
-
-                                }
-
-                                ${Number(
-                                    job.reward || 0
-                                ).toLocaleString()}
-
-                            </div>
-
-
-
-
-                            <button
-
-                                onclick="
-                                    alert(
-                                        'Apply feature next'
-                                    )
-                                "
-
-                                class="
-                                    w-full
-                                    bg-blue-600
-                                    text-white
-                                    py-3
-                                    rounded-2xl
-                                    font-bold
-                                "
-                            >
-
-                                Apply
-
-                            </button>
-
-
-
-
-                        </div>
-
-                    `
-
-                ).join("")
-
-                :
-
-                `
-
-                    <div class="
-                        bg-white
-                        rounded-[28px]
-                        p-6
-                        text-center
-                    ">
-
-                        No influencer jobs
-
-                    </div>
-
-                `
-
+                return;
             }
 
 
 
-
-        </div>
-
-
-
-
-        <div class="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            bg-white
-            border-t
-            grid
-            grid-cols-4
-            p-3
-            text-center
-        ">
-
-            <a
-                href="dashboard.html"
-                class="
-                    nav-btn
-                    text-2xl
-                "
-            >
-                🏠
-            </a>
+            alert(
+                "Proof submitted"
+            );
 
 
-            <a
-                href="jobs.html"
-                class="
-                    nav-btn
-                    text-2xl
-                "
-            >
-                💼
-            </a>
 
+            location.reload();
 
-            <a
-                href="notifications.html"
-                class="
-                    nav-btn
-                    text-2xl
-                "
-            >
-                🔔
-            </a>
+        }
 
+    )
 
-            <a
-                href="profile.html"
-                class="
-                    nav-btn
-                    text-2xl
-                "
-            >
-                👤
-            </a>
+    .catch(
 
-        </div>
+        ()=>{
 
-    `;
+            alert(
+                "Connection failed"
+            );
+
+        }
+
+    );
 
 }
 
