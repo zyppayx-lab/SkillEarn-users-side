@@ -3,18 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Jobs</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.fade{
+    animation:fade .35s;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
 </head>
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
-<div id="loader"
-class="fixed inset-0 flex items-center justify-center bg-black/10">
 
-Loading...
+<div
+    id="loader"
+    class="
+        fixed
+        inset-0
+        bg-black/10
+        z-50
+        flex
+        items-center
+        justify-center
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
 
 </div>
 
@@ -23,18 +80,32 @@ Loading...
 
 "use strict";
 
+
 const API =
 "https://skillearn.onrender.com";
+
 
 const token =
 localStorage.getItem(
     "token"
 );
 
+
+const user =
+JSON.parse(
+
+    localStorage.getItem(
+        "user"
+    ) || "{}"
+
+);
+
+
 const app =
 document.getElementById(
     "app"
 );
+
 
 const loader =
 document.getElementById(
@@ -42,16 +113,43 @@ document.getElementById(
 );
 
 
-test();
+if(!token){
+
+    location =
+    "login.html";
+
+}
 
 
-async function test(){
+
+load();
+
+
+
+
+function currency(){
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+
+    return "$";
+
+}
+
+
+
+
+
+
+async function load(){
 
     try{
-
-        app.innerHTML =
-        "<h1 class='p-5'>Fetching...</h1>";
-
 
         const res =
         await fetch(
@@ -72,19 +170,82 @@ async function test(){
         );
 
 
+
+        let data =
+        await res.json();
+
+
+
+        /*
+        Handles:
+        []
+        {tasks:[]}
+        {data:[]}
+        {results:[]}
+        anything else
+        */
+
+        if(
+            Array.isArray(
+                data
+            )
+        ){
+
+            data =
+            data;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.tasks
+            )
+        ){
+
+            data =
+            data.tasks;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.data
+            )
+        ){
+
+            data =
+            data.data;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.results
+            )
+        ){
+
+            data =
+            data.results;
+
+        }
+
+        else{
+
+            data = [];
+
+        }
+
+
+
         loader.style.display =
         "none";
 
 
-        app.innerHTML =
 
-        "<div class='p-5 text-xl'>" +
+        render(
+            data
+        );
 
-        "Status: " +
-
-        res.status +
-
-        "</div>";
 
 
     }catch(error){
@@ -93,19 +254,327 @@ async function test(){
         "none";
 
 
-        app.innerHTML =
-
-        "<div class='p-5 text-red-600'>" +
-
-        error.message +
-
-        "</div>";
+        render([]);
 
     }
 
 }
 
-            </script>
+
+
+
+
+
+function render(
+    jobs
+){
+
+    app.innerHTML = `
+
+        <div class="
+            p-4
+            pb-28
+        ">
+
+
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+
+                Jobs
+
+            </h1>
+
+
+
+
+            <!-- CATEGORIES -->
+            <div class="
+                grid
+                grid-cols-4
+                gap-2
+                mb-5
+            ">
+
+                ${tab(
+                    "Tasks",
+                    "jobs.html"
+                )}
+
+                ${tab(
+                    "Freelance",
+                    "freelance.html"
+                )}
+
+                ${tab(
+                    "Hiring",
+                    "hiring.html"
+                )}
+
+                ${tab(
+                    "Influencer",
+                    "influencer.html"
+                )}
+
+            </div>
+
+
+
+
+            ${
+
+                jobs.length
+
+                ?
+
+                jobs.map(
+                    card
+                ).join("")
+
+                :
+
+                empty()
+
+            }
+
+
+        </div>
+
+
+
+
+        <!-- NAV -->
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
+
+            ${nav(
+                "💼",
+                "jobs.html"
+            )}
+
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
+
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function card(
+    job
+){
+
+    return `
+
+        <div class="
+            fade
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
+
+
+            <h3 class="
+                font-bold
+                text-lg
+                mb-2
+            ">
+
+                ${job.title || "Task"}
+
+            </h3>
+
+
+
+            <p class="
+                text-slate-500
+                mb-4
+            ">
+
+                ${job.description || ""}
+
+            </p>
+
+
+
+            <div class="
+                text-blue-600
+                font-bold
+                mb-4
+            ">
+
+                ${currency()}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
+
+            </div>
+
+
+
+            <button
+
+                onclick="
+                    submitProof(
+                        ${job.id}
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                "
+            >
+
+                Submit Proof
+
+            </button>
+
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function submitProof(
+    id
+){
+
+    location =
+    "task-submit.html?id="+id;
+
+}
+
+
+
+
+
+
+function empty(){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            text-center
+        ">
+
+            No tasks available
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function tab(
+    text,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                bg-white
+                shadow
+                rounded-xl
+                p-3
+                text-center
+                text-sm
+            "
+        >
+
+            ${text}
+
+        </a>
+
+    `;
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    `;
+
+}
+
+</script>
 
 </body>
-</html>
+    </html>
