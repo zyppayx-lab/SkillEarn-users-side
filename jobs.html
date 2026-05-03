@@ -49,7 +49,6 @@ body{
 
 <body class="bg-slate-100">
 
-
 <div id="app"></div>
 
 
@@ -82,7 +81,6 @@ body{
 
 
 
-
 <script>
 
 "use strict";
@@ -98,14 +96,27 @@ localStorage.getItem(
 );
 
 
-const user =
-JSON.parse(
+let user =
+{};
 
-    localStorage.getItem(
-        "user"
-    )
 
-);
+try{
+
+    user =
+    JSON.parse(
+
+        localStorage.getItem(
+            "user"
+        ) || "{}"
+
+    );
+
+}catch{
+
+    user =
+    {};
+
+}
 
 
 
@@ -156,7 +167,7 @@ function auth(){
 
 
 
-async function fetchJobs(
+async function getJobs(
     endpoint
 ){
 
@@ -187,7 +198,21 @@ async function fetchJobs(
         }
 
 
-        return await res.json();
+        const data =
+        await res.json();
+
+
+        return Array.isArray(
+            data
+        )
+
+        ?
+
+        data
+
+        :
+
+        [];
 
 
     }catch{
@@ -203,35 +228,46 @@ async function fetchJobs(
 
 async function load(){
 
+    let jobs =
+    [];
+
+
     try{
 
 
-        const tasks =
-        await fetchJobs(
-            "/api/users/tasks"
-        );
+        const [
+
+            tasks,
+
+            freelance,
+
+            hiring,
+
+            influencer
+
+        ] = await Promise.all([
+
+            getJobs(
+                "/api/users/tasks"
+            ),
+
+            getJobs(
+                "/api/users/freelance-jobs"
+            ),
+
+            getJobs(
+                "/api/users/hiring-jobs"
+            ),
+
+            getJobs(
+                "/api/users/influencer-jobs"
+            )
+
+        ]);
 
 
-        const freelance =
-        await fetchJobs(
-            "/api/users/freelance-jobs"
-        );
 
-
-        const hiring =
-        await fetchJobs(
-            "/api/users/hiring-jobs"
-        );
-
-
-        const influencer =
-        await fetchJobs(
-            "/api/users/influencer-jobs"
-        );
-
-
-
-        const jobs = [
+        jobs = [
 
             ...tasks.map(
                 x=>({
@@ -264,6 +300,8 @@ async function load(){
         ];
 
 
+    }finally{
+
 
         document
         .getElementById(
@@ -273,18 +311,9 @@ async function load(){
         "none";
 
 
-
         render(
             jobs
         );
-
-
-
-    }catch{
-
-
-        window.location =
-        "login.html";
 
     }
 
@@ -309,6 +338,7 @@ function render(
         ">
 
 
+            <!-- TOP -->
             <div class="
                 mb-5
             ">
@@ -324,10 +354,11 @@ function render(
                     text-2xl
                     font-bold
                 ">
-                    ${user.name}
+                    ${user.name || ""}
                 </h2>
 
             </div>
+
 
 
 
@@ -348,11 +379,14 @@ function render(
             }
 
 
+
+
         </div>
 
 
 
 
+        <!-- BOTTOM NAV -->
         <div class="
             fixed
             bottom-0
@@ -367,25 +401,10 @@ function render(
             text-center
         ">
 
-            ${nav(
-                "🏠",
-                "dashboard.html"
-            )}
-
-            ${nav(
-                "💼",
-                "jobs.html"
-            )}
-
-            ${nav(
-                "🔔",
-                "notifications.html"
-            )}
-
-            ${nav(
-                "👤",
-                "profile.html"
-            )}
+            ${nav("🏠","dashboard.html")}
+            ${nav("💼","jobs.html")}
+            ${nav("🔔","notifications.html")}
+            ${nav("👤","profile.html")}
 
         </div>
 
@@ -422,7 +441,9 @@ function card(
                     font-bold
                     text-lg
                 ">
+
                     ${job.title || "Untitled"}
+
                 </h3>
 
 
@@ -434,7 +455,9 @@ function card(
                     py-1
                     rounded-full
                 ">
+
                     ${job.type}
+
                 </span>
 
 
@@ -445,7 +468,9 @@ function card(
                 text-slate-600
                 mb-4
             ">
+
                 ${job.description || ""}
+
             </p>
 
 
@@ -479,8 +504,8 @@ function empty(){
             bg-white
             rounded-[28px]
             p-6
-            text-center
             shadow
+            text-center
         ">
 
             No jobs available
@@ -521,6 +546,5 @@ function nav(
 
 </script>
 
-
 </body>
-</html>
+    </html>
