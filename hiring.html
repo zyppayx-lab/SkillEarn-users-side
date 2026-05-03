@@ -3,30 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hiring Debug</title>
+
+<title>Hiring Jobs</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.fade{
+    animation:fade .35s;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
 </head>
 
-<body class="bg-slate-100 p-4">
 
-<div id="status" class="text-lg font-bold mb-4">
-Loading...
+<body class="bg-slate-100">
+
+<div id="app"></div>
+
+
+<div
+    id="loader"
+
+    class="
+        fixed
+        inset-0
+        bg-black/10
+        z-50
+        flex
+        items-center
+        justify-center
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
 </div>
 
-<pre
-    id="result"
-    class="bg-white p-4 rounded-2xl text-sm overflow-auto"
-></pre>
+
 
 <script>
+
+"use strict";
+
 
 const API =
 "https://skillearn.onrender.com";
 
-const token =
-localStorage.getItem("token");
 
-async function test(){
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+const user =
+JSON.parse(
+
+    localStorage.getItem(
+        "user"
+    ) || "{}"
+
+);
+
+
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
+if(!token){
+
+    location =
+    "login.html";
+
+}
+
+
+
+load();
+
+
+
+
+function currency(){
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+
+    return "$";
+
+}
+
+
+
+
+
+
+async function load(){
+
+    let jobs = [];
+
 
     try{
 
@@ -40,45 +167,380 @@ async function test(){
 
                 headers:{
                     Authorization:
-                    "Bearer "+token
+                    "Bearer "+
+                    token
                 }
 
             }
 
         );
 
-        document
-        .getElementById("status")
-        .innerText =
-        "Status: "+res.status;
 
-        const text =
-        await res.text();
 
-        document
-        .getElementById("result")
-        .innerText =
-        text;
+        jobs =
+        await res.json();
+
+
+
+        if(
+            !Array.isArray(
+                jobs
+            )
+        ){
+
+            jobs = [];
+
+        }
 
     }catch(error){
 
-        document
-        .getElementById("status")
-        .innerText =
-        "ERROR";
-
-        document
-        .getElementById("result")
-        .innerText =
-        error.message;
+        jobs = [];
 
     }
 
+
+
+    loader.style.display =
+    "none";
+
+
+
+    render(
+        jobs
+    );
+
 }
 
-test();
+
+
+
+
+
+function render(
+    jobs
+){
+
+    app.innerHTML = `
+
+        <div class="
+            p-4
+            pb-28
+        ">
+
+
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+
+                Hiring Jobs
+
+            </h1>
+
+
+
+
+            ${tabs()}
+
+
+
+
+            ${
+
+                jobs.length
+
+                ?
+
+                jobs.map(
+                    card
+                ).join("")
+
+                :
+
+                empty()
+
+            }
+
+
+        </div>
+
+
+
+
+        ${navBar()}
+
+    `;
+
+}
+
+
+
+
+
+
+function card(
+    job
+){
+
+    return `
+
+        <div class="
+            fade
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
+
+
+            <h3 class="
+                font-bold
+                text-lg
+                mb-2
+            ">
+
+                ${job.title || "Hiring Job"}
+
+            </h3>
+
+
+
+            <p class="
+                text-slate-500
+                mb-4
+            ">
+
+                ${job.description || ""}
+
+            </p>
+
+
+
+            <div class="
+                text-blue-600
+                font-bold
+                mb-4
+            ">
+
+                ${currency()}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
+
+            </div>
+
+
+
+            <button
+
+                onclick="
+                    apply(
+                        ${job.id}
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                "
+            >
+
+                Apply
+
+            </button>
+
+
+        </div>
+
+    ";
+
+}
+
+
+
+
+
+
+function apply(
+    id
+){
+
+    location =
+    "hiring-submit.html?id="+id;
+
+}
+
+
+
+
+
+
+function empty(){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            shadow
+            text-center
+        ">
+
+            No hiring jobs available
+
+        </div>
+
+    ";
+
+}
+
+
+
+
+
+
+function tabs(){
+
+    return `
+
+        <div class="
+            grid
+            grid-cols-4
+            gap-2
+            mb-5
+        ">
+
+            <a
+                href="jobs.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Tasks
+            </a>
+
+
+            <a
+                href="freelance.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Freelance
+            </a>
+
+
+            <a
+                href="hiring.html"
+                class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Hiring
+            </a>
+
+
+            <a
+                href="influencer.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Influencer
+            </a>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function navBar(){
+
+    return `
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            <a
+                href="dashboard.html"
+                class="nav-btn text-2xl"
+            >
+                🏠
+            </a>
+
+
+            <a
+                href="jobs.html"
+                class="nav-btn text-2xl"
+            >
+                💼
+            </a>
+
+
+            <a
+                href="notifications.html"
+                class="nav-btn text-2xl"
+            >
+                🔔
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="nav-btn text-2xl"
+            >
+                👤
+            </a>
+
+        </div>
+
+    `;
+
+}
 
 </script>
 
 </body>
-</html>
+    </html>
