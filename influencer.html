@@ -30,7 +30,7 @@ body{
 
     from{
         opacity:0;
-        transform:translateY(15px);
+        transform:translateY(10px);
     }
 
     to{
@@ -52,14 +52,15 @@ body{
 
 <div
     id="loader"
+
     class="
         fixed
         inset-0
+        bg-black/10
+        z-50
         flex
         items-center
         justify-center
-        bg-black/10
-        z-50
     "
 >
 
@@ -75,6 +76,7 @@ body{
     "></div>
 
 </div>
+
 
 
 <script>
@@ -102,6 +104,18 @@ JSON.parse(
 );
 
 
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
 if(!token){
 
     location =
@@ -125,6 +139,7 @@ function currency(){
         return "₦";
 
     }
+
 
     return "$";
 
@@ -159,47 +174,62 @@ async function load(){
 
 
 
-        const jobs =
+        let data =
         await res.json();
 
 
 
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
+        if(
+            Array.isArray(
+                data
+            )
+        ){}
+
+        else if(
+            Array.isArray(
+                data.jobs
+            )
+        ){
+
+            data =
+            data.jobs;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.data
+            )
+        ){
+
+            data =
+            data.data;
+
+        }
+
+        else{
+
+            data = [];
+
+        }
+
+
+
+        loader.style.display =
         "none";
 
 
 
         render(
-
-            Array.isArray(
-                jobs
-            )
-
-            ?
-
-            jobs
-
-            :
-
-            []
-
+            data
         );
 
 
 
     }catch(error){
 
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
+        loader.style.display =
         "none";
-
 
 
         render([]);
@@ -217,11 +247,7 @@ function render(
     jobs
 ){
 
-    document
-    .getElementById(
-        "app"
-    )
-    .innerHTML = `
+    app.innerHTML = `
 
         <div class="
             p-4
@@ -229,47 +255,21 @@ function render(
         ">
 
 
-
-
-            <!-- CATEGORIES -->
-            <div class="
-                flex
-                gap-2
-                overflow-x-auto
-                mb-5
-            ">
-
-                ${tab(
-                    "Tasks",
-                    "jobs.html"
-                )}
-
-                ${tab(
-                    "Freelance",
-                    "freelance.html"
-                )}
-
-                ${tab(
-                    "Hiring",
-                    "hiring.html"
-                )}
-
-                ${activeTab(
-                    "Influencer"
-                )}
-
-            </div>
-
-
-
-
             <h1 class="
                 text-2xl
                 font-bold
                 mb-5
             ">
+
                 Influencer Jobs
+
             </h1>
+
+
+
+
+            ${tabs()}
+
 
 
 
@@ -290,47 +290,12 @@ function render(
             }
 
 
-
         </div>
 
 
 
 
-        <!-- NAV -->
-        <div class="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            bg-white
-            border-t
-            grid
-            grid-cols-4
-            p-3
-            text-center
-        ">
-
-            ${nav(
-                "🏠",
-                "dashboard.html"
-            )}
-
-            ${nav(
-                "💼",
-                "jobs.html"
-            )}
-
-            ${nav(
-                "🔔",
-                "notifications.html"
-            )}
-
-            ${nav(
-                "👤",
-                "profile.html"
-            )}
-
-        </div>
+        ${navBar()}
 
     `;
 
@@ -347,18 +312,14 @@ function card(
 
     return `
 
-        <div
-            id="job-${job.id}"
-
-            class="
-                fade
-                bg-white
-                rounded-[28px]
-                p-5
-                shadow
-                mb-4
-            "
-        >
+        <div class="
+            fade
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
 
 
             <h3 class="
@@ -367,14 +328,14 @@ function card(
                 mb-2
             ">
 
-                ${job.title || "Campaign"}
+                ${job.title || "Influencer Job"}
 
             </h3>
 
 
 
             <p class="
-                text-slate-600
+                text-slate-500
                 mb-4
             ">
 
@@ -402,7 +363,7 @@ function card(
             <button
 
                 onclick="
-                    applyJob(
+                    apply(
                         ${job.id}
                     )
                 "
@@ -413,7 +374,6 @@ function card(
                     text-white
                     py-3
                     rounded-2xl
-                    font-bold
                 "
             >
 
@@ -424,7 +384,7 @@ function card(
 
         </div>
 
-    `;
+    ";
 
 }
 
@@ -433,103 +393,12 @@ function card(
 
 
 
-async function applyJob(
-    jobId
+function apply(
+    id
 ){
 
-    const portfolio =
-    prompt(
-        "Enter portfolio link"
-    );
-
-
-    if(
-        !portfolio
-    ){
-
-        return;
-
-    }
-
-
-
-    try{
-
-        const res =
-        await fetch(
-
-            API+
-            "/api/users/apply-influencer",
-
-            {
-
-                method:"POST",
-
-                headers:{
-
-                    Authorization:
-                    "Bearer "+
-                    token,
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-                body:
-                JSON.stringify({
-
-                    job_id:
-                    jobId,
-
-                    portfolio_link:
-                    portfolio
-
-                })
-
-            }
-
-        );
-
-
-
-        if(
-            !res.ok
-        ){
-
-            alert(
-                "Application failed"
-            );
-
-            return;
-
-        }
-
-
-
-        document
-        .getElementById(
-
-            "job-"+jobId
-
-        )
-        .remove();
-
-
-
-        alert(
-            "Applied successfully"
-        );
-
-
-
-    }catch(error){
-
-        alert(
-            "Connection failed"
-        );
-
-    }
+    location =
+    "influencer-submit.html?id="+id;
 
 }
 
@@ -553,7 +422,7 @@ function empty(){
 
         </div>
 
-    `;
+    ";
 
 }
 
@@ -562,56 +431,75 @@ function empty(){
 
 
 
-function tab(
-    name,
-    page
-){
-
-    return `
-
-        <a
-
-            href="${page}"
-
-            class="
-                whitespace-nowrap
-                bg-white
-                px-4
-                py-2
-                rounded-full
-                shadow
-            "
-        >
-
-            ${name}
-
-        </a>
-
-    `;
-
-}
-
-
-
-
-
-
-function activeTab(
-    name
-){
+function tabs(){
 
     return `
 
         <div class="
-            whitespace-nowrap
-            bg-blue-600
-            text-white
-            px-4
-            py-2
-            rounded-full
+            grid
+            grid-cols-4
+            gap-2
+            mb-5
         ">
 
-            ${name}
+            <a
+                href="jobs.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Tasks
+            </a>
+
+
+            <a
+                href="freelance.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Freelance
+            </a>
+
+
+            <a
+                href="hiring.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Hiring
+            </a>
+
+
+            <a
+                href="influencer.html"
+                class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Influencer
+            </a>
 
         </div>
 
@@ -624,26 +512,55 @@ function activeTab(
 
 
 
-function nav(
-    icon,
-    page
-){
+function navBar(){
 
     return `
 
-        <a
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
 
-            href="${page}"
+            <a
+                href="dashboard.html"
+                class="nav-btn text-2xl"
+            >
+                🏠
+            </a>
 
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
 
-            ${icon}
+            <a
+                href="jobs.html"
+                class="nav-btn text-2xl"
+            >
+                💼
+            </a>
 
-        </a>
+
+            <a
+                href="notifications.html"
+                class="nav-btn text-2xl"
+            >
+                🔔
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="nav-btn text-2xl"
+            >
+                👤
+            </a>
+
+        </div>
 
     `;
 
@@ -652,4 +569,4 @@ function nav(
 </script>
 
 </body>
-</html>
+    </html>
