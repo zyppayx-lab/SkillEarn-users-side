@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,6 +22,26 @@ body{
     transform:scale(.85);
 }
 
+.float-card{
+    animation:floatCard 3s infinite;
+}
+
+@keyframes floatCard{
+
+    0%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-3px);
+    }
+
+    100%{
+        transform:translateY(0);
+    }
+
+}
+
 </style>
 
 </head>
@@ -30,130 +50,33 @@ body{
 <body class="bg-slate-100">
 
 
-<div id="app" class="min-h-screen pb-20">
+<div id="app"></div>
 
 
-    <!-- TOP -->
-    <header class="
-        bg-blue-600
-        text-white
-        px-4
-        py-4
-        shadow-md
-        sticky
-        top-0
-        z-50
-    ">
+<div
+    id="loader"
 
-        <div class="
-            max-w-6xl
-            mx-auto
-            flex
-            justify-between
-            items-center
-        ">
-
-            <h1 class="
-                text-xl
-                font-bold
-            ">
-                SkillEarn
-            </h1>
-
-
-            <button
-                onclick="logout()"
-                class="text-sm"
-            >
-                Logout
-            </button>
-
-        </div>
-
-    </header>
-
-
-
-    <!-- CONTENT -->
-    <main
-        id="screen"
-
-        class="
-            max-w-6xl
-            mx-auto
-            p-4
-        "
-    ></main>
-
-
-
-    <!-- BOTTOM NAV -->
-    <nav class="
+    class="
         fixed
-        bottom-0
-        left-0
-        right-0
+        inset-0
+        bg-black/10
+        z-50
+        flex
+        items-center
+        justify-center
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
         bg-white
-        border-t
-        grid
-        grid-cols-4
-        p-3
-        text-center
-    ">
-
-        <button
-            onclick="
-                location='dashboard.html'
-            "
-
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-            🏠
-        </button>
-
-
-        <button
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-            💼
-        </button>
-
-
-        <button
-            onclick="
-                location='notifications.html'
-            "
-
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-            🔔
-        </button>
-
-
-        <button
-            onclick="
-                location='profile.html'
-            "
-
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-            👤
-        </button>
-
-    </nav>
-
+    "></div>
 
 </div>
 
@@ -163,12 +86,6 @@ body{
 <script>
 
 "use strict";
-
-
-const SCREEN =
-document.getElementById(
-    "screen"
-);
 
 
 const API =
@@ -186,7 +103,7 @@ JSON.parse(
 
     localStorage.getItem(
         "user"
-    ) || "{}"
+    )
 
 );
 
@@ -194,30 +111,30 @@ JSON.parse(
 
 if(!token){
 
-    location =
+    window.location =
     "login.html";
 
 }
 
 
 
-
-loadTasks();
+load();
 
 
 
 
 function currency(){
 
-    return user.country==="NG"
+    if(
+        user.country==="NG"
+    ){
 
-    ?
+        return "₦";
 
-    "₦"
+    }
 
-    :
 
-    "$";
+    return "$";
 
 }
 
@@ -229,7 +146,7 @@ function auth(){
     return {
 
         Authorization:
-        "Bearer " +
+        "Bearer "+
         token
 
     };
@@ -248,7 +165,8 @@ async function fetchJobs(
         const res =
         await fetch(
 
-            API + endpoint,
+            API+
+            endpoint,
 
             {
 
@@ -269,21 +187,7 @@ async function fetchJobs(
         }
 
 
-        const data =
-        await res.json();
-
-
-        return Array.isArray(
-            data
-        )
-
-        ?
-
-        data
-
-        :
-
-        [];
+        return await res.json();
 
 
     }catch{
@@ -297,87 +201,92 @@ async function fetchJobs(
 
 
 
-async function loadTasks(){
+async function load(){
 
-    SCREEN.innerHTML = `
-
-        <div class="
-            text-center
-            p-10
-        ">
-            Loading...
-        </div>
-
-    `;
+    try{
 
 
-    const [
-
-        tasks,
-
-        freelance,
-
-        hiring,
-
-        influencer
-
-    ] = await Promise.all([
-
-        fetchJobs(
+        const tasks =
+        await fetchJobs(
             "/api/users/tasks"
-        ),
+        );
 
-        fetchJobs(
+
+        const freelance =
+        await fetchJobs(
             "/api/users/freelance-jobs"
-        ),
+        );
 
-        fetchJobs(
+
+        const hiring =
+        await fetchJobs(
             "/api/users/hiring-jobs"
-        ),
+        );
 
-        fetchJobs(
+
+        const influencer =
+        await fetchJobs(
             "/api/users/influencer-jobs"
+        );
+
+
+
+        const jobs = [
+
+            ...tasks.map(
+                x=>({
+                    ...x,
+                    type:"TASK"
+                })
+            ),
+
+            ...freelance.map(
+                x=>({
+                    ...x,
+                    type:"FREELANCE"
+                })
+            ),
+
+            ...hiring.map(
+                x=>({
+                    ...x,
+                    type:"HIRING"
+                })
+            ),
+
+            ...influencer.map(
+                x=>({
+                    ...x,
+                    type:"INFLUENCER"
+                })
+            )
+
+        ];
+
+
+
+        document
+        .getElementById(
+            "loader"
         )
-
-    ]);
-
-
-    const jobs = [
-
-        ...tasks.map(
-            x=>({
-                ...x,
-                type:"TASK"
-            })
-        ),
-
-        ...freelance.map(
-            x=>({
-                ...x,
-                type:"FREELANCE"
-            })
-        ),
-
-        ...hiring.map(
-            x=>({
-                ...x,
-                type:"HIRING"
-            })
-        ),
-
-        ...influencer.map(
-            x=>({
-                ...x,
-                type:"INFLUENCER"
-            })
-        )
-
-    ];
+        .style.display =
+        "none";
 
 
-    render(
-        jobs
-    );
+
+        render(
+            jobs
+        );
+
+
+
+    }catch{
+
+
+        window.location =
+        "login.html";
+
+    }
 
 }
 
@@ -388,44 +297,97 @@ function render(
     jobs
 ){
 
-    SCREEN.innerHTML = `
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
-            mb-5
+            pb-28
+            p-4
         ">
 
-            <p class="
-                text-slate-500
+
+            <div class="
+                mb-5
             ">
-                Browse Jobs 💼
-            </p>
+
+                <p class="
+                    text-slate-500
+                ">
+                    Browse Jobs 💼
+                </p>
 
 
-            <h2 class="
-                text-2xl
-                font-bold
-            ">
-                ${user.name || "User"}
-            </h2>
+                <h2 class="
+                    text-2xl
+                    font-bold
+                ">
+                    ${user.name}
+                </h2>
+
+            </div>
+
+
+
+            ${
+
+                jobs.length
+
+                ?
+
+                jobs.map(
+                    card
+                ).join("")
+
+                :
+
+                empty()
+
+            }
+
 
         </div>
 
 
-        ${
 
-            jobs.length
 
-            ?
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            shadow-2xl
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
 
-            jobs.map(
-                card
-            ).join("")
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
 
-            :
+            ${nav(
+                "💼",
+                "jobs.html"
+            )}
 
-            empty()
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
 
-        }
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
+
+        </div>
 
     `;
 
@@ -440,16 +402,13 @@ function card(
 
     return `
 
-        <div
-
-            class="
-                bg-white
-                rounded-[28px]
-                p-5
-                shadow
-                mb-4
-            "
-        >
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
 
 
             <div class="
@@ -463,9 +422,7 @@ function card(
                     font-bold
                     text-lg
                 ">
-
                     ${job.title || "Untitled"}
-
                 </h3>
 
 
@@ -477,9 +434,7 @@ function card(
                     py-1
                     rounded-full
                 ">
-
                     ${job.type}
-
                 </span>
 
 
@@ -490,9 +445,7 @@ function card(
                 text-slate-600
                 mb-4
             ">
-
                 ${job.description || ""}
-
             </p>
 
 
@@ -541,12 +494,28 @@ function empty(){
 
 
 
-function logout(){
+function nav(
+    icon,
+    page
+){
 
-    localStorage.clear();
+    return `
 
-    location =
-    "login.html";
+        <a
+
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    ";
 
 }
 
@@ -554,4 +523,4 @@ function logout(){
 
 
 </body>
-    </html>
+</html>
