@@ -4,20 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Freelance Jobs</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.fade{
+    animation:fade .35s;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
 </head>
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
-<div id="loader"
-class="fixed inset-0 bg-black/10 z-50 flex items-center justify-center">
 
-<div class="
-w-16 h-16 rounded-full border-[5px]
-border-blue-100 border-t-blue-600
-animate-spin bg-white"></div>
+<div
+    id="loader"
+    class="
+        fixed
+        inset-0
+        bg-black/10
+        z-50
+        flex
+        items-center
+        justify-center
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
 
 </div>
 
@@ -26,54 +79,159 @@ animate-spin bg-white"></div>
 
 "use strict";
 
-const API="https://skillearn.onrender.com";
-const token=localStorage.getItem("token");
-const user=JSON.parse(localStorage.getItem("user")||"{}");
 
-const app=document.getElementById("app");
-const loader=document.getElementById("loader");
+const API =
+"https://skillearn.onrender.com";
 
-if(!token) location="login.html";
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+const user =
+JSON.parse(
+
+    localStorage.getItem(
+        "user"
+    ) || "{}"
+
+);
+
+
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
+if(!token){
+
+    location =
+    "login.html";
+
+}
+
+
 
 load();
 
 
+
+
 function currency(){
-    return user.country==="NG" ? "₦" : "$";
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+
+    return "$";
+
 }
+
+
+
+
 
 
 async function load(){
 
     try{
 
-        const res=await fetch(
+        const res =
+        await fetch(
 
             API+
             "/api/users/freelance-jobs",
 
             {
+
                 headers:{
-                    Authorization:"Bearer "+token
+                    Authorization:
+                    "Bearer "+
+                    token
                 }
+
             }
 
         );
 
-        let data=await res.json();
 
-        if(Array.isArray(data)){}
-        else if(Array.isArray(data.jobs)) data=data.jobs;
-        else if(Array.isArray(data.data)) data=data.data;
-        else data=[];
 
-        loader.style.display="none";
+        let data =
+        await res.json();
 
-        render(data);
 
-    }catch{
 
-        loader.style.display="none";
+        if(
+            Array.isArray(
+                data
+            )
+        ){
+
+            data =
+            data;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.jobs
+            )
+        ){
+
+            data =
+            data.jobs;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.data
+            )
+        ){
+
+            data =
+            data.data;
+
+        }
+
+        else{
+
+            data = [];
+
+        }
+
+
+
+        loader.style.display =
+        "none";
+
+
+
+        render(
+            data
+        );
+
+
+
+    }catch(error){
+
+        loader.style.display =
+        "none";
+
 
         render([]);
 
@@ -82,123 +240,315 @@ async function load(){
 }
 
 
-function render(jobs){
 
-app.innerHTML=`
 
-<div class="p-4 pb-28">
 
-<h1 class="text-2xl font-bold mb-5">
-Freelance Jobs
-</h1>
 
-${tabs()}
+function render(
+    jobs
+){
 
-${jobs.length ? jobs.map(card).join("") : empty()}
+    app.innerHTML = `
 
-</div>
+        <div class="
+            p-4
+            pb-28
+        ">
 
-${navBar()}
 
-`;
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+
+                Freelance Jobs
+
+            </h1>
+
+
+
+
+            <div class="
+                grid
+                grid-cols-4
+                gap-2
+                mb-5
+            ">
+
+                <a href="jobs.html"
+                class="bg-white p-3 rounded-xl shadow text-center text-sm">
+                Tasks
+                </a>
+
+                <a href="freelance.html"
+                class="bg-blue-600 text-white p-3 rounded-xl text-center text-sm">
+                Freelance
+                </a>
+
+                <a href="hiring.html"
+                class="bg-white p-3 rounded-xl shadow text-center text-sm">
+                Hiring
+                </a>
+
+                <a href="influencer.html"
+                class="bg-white p-3 rounded-xl shadow text-center text-sm">
+                Influencer
+                </a>
+
+            </div>
+
+
+
+
+            ${
+
+                jobs.length
+
+                ?
+
+                jobs.map(
+                    card
+                ).join("")
+
+                :
+
+                empty()
+
+            }
+
+
+        </div>
+
+
+
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            <a href="dashboard.html" class="nav-btn text-2xl">🏠</a>
+            <a href="jobs.html" class="nav-btn text-2xl">💼</a>
+            <a href="notifications.html" class="nav-btn text-2xl">🔔</a>
+            <a href="profile.html" class="nav-btn text-2xl">👤</a>
+
+        </div>
+
+    `;
 
 }
 
 
-function card(job){
 
-return `
 
-<div class="bg-white rounded-[28px] p-5 shadow mb-4">
 
-<h3 class="font-bold text-lg mb-2">
-${job.title||"Freelance Job"}
-</h3>
 
-<p class="text-slate-500 mb-4">
-${job.description||""}
-</p>
+function card(
+    job
+){
 
-<div class="text-blue-600 font-bold mb-4">
-${currency()}${Number(job.reward||0).toLocaleString()}
-</div>
+    return `
 
-<button
-onclick="apply(${job.id})"
-class="w-full bg-blue-600 text-white py-3 rounded-2xl">
+        <div class="
+            fade
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
 
-Apply
 
-</button>
+            <h3 class="
+                font-bold
+                text-lg
+                mb-2
+            ">
 
-</div>
+                ${job.title || "Freelance Job"}
 
-`;
+            </h3>
+
+
+
+            <p class="
+                text-slate-500
+                mb-4
+            ">
+
+                ${job.description || ""}
+
+            </p>
+
+
+
+            <div class="
+                text-blue-600
+                font-bold
+                mb-4
+            ">
+
+                ${currency()}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
+
+            </div>
+
+
+
+            <button
+
+                onclick="
+                    applyJob(
+                        ${job.id}
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                "
+            >
+
+                Apply
+
+            </button>
+
+
+        </div>
+
+    `;
 
 }
 
 
-function apply(id){
 
-    location=
-    "freelance-submit.html?id="+id;
+
+
+
+async function applyJob(
+    id
+){
+
+    const proposal =
+    prompt(
+        "Paste proposal"
+    );
+
+
+    if(
+        !proposal
+    ){
+        return;
+    }
+
+
+    try{
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/apply-freelance",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    Authorization:
+                    "Bearer "+
+                    token,
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body:
+                JSON.stringify({
+
+                    job_id:id,
+
+                    proposal:proposal
+
+                })
+
+            }
+
+        );
+
+
+        if(
+            !res.ok
+        ){
+
+            alert(
+                "Application failed"
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Application successful"
+        );
+
+
+        load();
+
+
+    }catch(error){
+
+        alert(
+            "Connection failed"
+        );
+
+    }
 
 }
+
+
+
+
 
 
 function empty(){
 
-return `
-<div class="bg-white rounded-[28px] p-6 text-center">
-No freelance jobs available
-</div>
-`;
+    return `
 
-}
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            text-center
+        ">
 
+            No freelance jobs available
 
-function tabs(){
+        </div>
 
-return `
-
-<div class="grid grid-cols-4 gap-2 mb-5">
-
-<a href="jobs.html" class="bg-white p-3 rounded-xl shadow text-center text-sm">Tasks</a>
-
-<a href="freelance.html" class="bg-blue-600 text-white p-3 rounded-xl text-center text-sm">Freelance</a>
-
-<a href="hiring.html" class="bg-white p-3 rounded-xl shadow text-center text-sm">Hiring</a>
-
-<a href="influencer.html" class="bg-white p-3 rounded-xl shadow text-center text-sm">Influencer</a>
-
-</div>
-
-`;
-
-}
-
-
-function navBar(){
-
-return `
-
-<div class="
-fixed bottom-0 left-0 right-0
-bg-white border-t grid grid-cols-4
-p-3 text-center">
-
-<a href="dashboard.html" class="text-2xl">🏠</a>
-<a href="jobs.html" class="text-2xl">💼</a>
-<a href="notifications.html" class="text-2xl">🔔</a>
-<a href="profile.html" class="text-2xl">👤</a>
-
-</div>
-
-`;
+    `;
 
 }
 
 </script>
 
 </body>
-</html>
+    </html>
