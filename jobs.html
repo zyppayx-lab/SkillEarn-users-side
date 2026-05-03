@@ -9,6 +9,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+
 .nav-btn{
     transition:.25s;
 }
@@ -22,6 +23,7 @@
 }
 
 @keyframes pop{
+
     from{
         transform:scale(.8);
         opacity:0;
@@ -31,17 +33,22 @@
         transform:scale(1);
         opacity:1;
     }
+
 }
+
 </style>
 
 </head>
+
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
+
 <div
     id="loader"
+
     class="
         fixed
         inset-0
@@ -66,7 +73,9 @@
 
 </div>
 
+
 <div id="modal"></div>
+
 
 <script>
 
@@ -85,27 +94,11 @@ localStorage.getItem(
 
 const user =
 JSON.parse(
+
     localStorage.getItem(
         "user"
     ) || "{}"
-);
 
-
-const app =
-document.getElementById(
-    "app"
-);
-
-
-const loader =
-document.getElementById(
-    "loader"
-);
-
-
-const modal =
-document.getElementById(
-    "modal"
 );
 
 
@@ -122,13 +115,12 @@ load();
 
 
 
-
 function authHeaders(){
 
     return {
 
         Authorization:
-        "Bearer "+
+        "Bearer " +
         token
 
     };
@@ -137,8 +129,7 @@ function authHeaders(){
 
 
 
-
-async function safeFetch(
+async function fetchJobs(
     endpoint
 ){
 
@@ -147,7 +138,7 @@ async function safeFetch(
         const res =
         await fetch(
 
-            API+
+            API +
             endpoint,
 
             {
@@ -186,7 +177,6 @@ async function safeFetch(
 
         return data;
 
-
     }catch{
 
         return [];
@@ -197,86 +187,78 @@ async function safeFetch(
 
 
 
-
 async function load(){
 
     loader.style.display =
     "flex";
 
 
-    try{
-
-        const tasks =
-        await safeFetch(
-            "/api/users/tasks"
-        );
+    const tasks =
+    await fetchJobs(
+        "/api/users/tasks"
+    );
 
 
-        const freelance =
-        await safeFetch(
-            "/api/users/freelance-jobs"
-        );
+    const freelance =
+    await fetchJobs(
+        "/api/users/freelance-jobs"
+    );
 
 
-        const hiring =
-        await safeFetch(
-            "/api/users/hiring-jobs"
-        );
+    const hiring =
+    await fetchJobs(
+        "/api/users/hiring-jobs"
+    );
 
 
-        const influencer =
-        await safeFetch(
-            "/api/users/influencer-jobs"
-        );
+    const influencer =
+    await fetchJobs(
+        "/api/users/influencer-jobs"
+    );
 
 
-        const jobs = [
+    const jobs = [
 
-            ...tasks.map(
-                x=>({
-                    ...x,
-                    type:"TASK"
-                })
-            ),
+        ...tasks.map(
+            x=>({
+                ...x,
+                type:"TASK"
+            })
+        ),
 
-            ...freelance.map(
-                x=>({
-                    ...x,
-                    type:"FREELANCE"
-                })
-            ),
+        ...freelance.map(
+            x=>({
+                ...x,
+                type:"FREELANCE"
+            })
+        ),
 
-            ...hiring.map(
-                x=>({
-                    ...x,
-                    type:"HIRING"
-                })
-            ),
+        ...hiring.map(
+            x=>({
+                ...x,
+                type:"HIRING"
+            })
+        ),
 
-            ...influencer.map(
-                x=>({
-                    ...x,
-                    type:"INFLUENCER"
-                })
-            )
+        ...influencer.map(
+            x=>({
+                ...x,
+                type:"INFLUENCER"
+            })
+        )
 
-        ];
-
-
-        render(
-            jobs
-        );
+    ];
 
 
-    }finally{
+    loader.style.display =
+    "none";
 
-        loader.style.display =
-        "none";
 
-    }
+    render(
+        jobs
+    );
 
 }
-
 
 
 
@@ -297,7 +279,6 @@ function currency(){
 
 
 
-
 function render(
     jobs
 ){
@@ -308,6 +289,7 @@ function render(
             p-4
             pb-28
         ">
+
 
             <h1 class="
                 text-2xl
@@ -326,15 +308,14 @@ function render(
 
                 jobs.map(
                     card
-                ).join(
-                    ""
-                )
+                ).join("")
 
                 :
 
                 empty()
 
             }
+
 
         </div>
 
@@ -365,7 +346,6 @@ function render(
 
 
 
-
 function card(
     job
 ){
@@ -373,6 +353,7 @@ function card(
     return `
 
         <div
+
             id="job-${job.id}"
 
             class="
@@ -384,17 +365,21 @@ function card(
             "
         >
 
+
             <div class="
                 flex
                 justify-between
                 mb-3
             ">
 
+
                 <h3 class="
                     font-bold
                     text-lg
                 ">
+
                     ${job.title || "Untitled"}
+
                 </h3>
 
 
@@ -410,6 +395,7 @@ function card(
                     ${job.type}
 
                 </span>
+
 
             </div>
 
@@ -440,8 +426,6 @@ function card(
 
             <button
 
-                id="btn-${job.id}"
-
                 onclick="
                     applyJob(
                         ${job.id},
@@ -463,6 +447,7 @@ function card(
 
             </button>
 
+
         </div>
 
     ";
@@ -471,33 +456,16 @@ function card(
 
 
 
-
 async function applyJob(
     jobId,
     type
 ){
 
-    const button =
-    document.getElementById(
-        "btn-"+jobId
-    );
-
-
-    button.disabled =
-    true;
-
-
-    button.innerHTML =
-    "Processing...";
-
-
     let endpoint =
     "";
 
-
     let payload =
     {};
-
 
 
     if(
@@ -511,11 +479,7 @@ async function applyJob(
 
 
         if(!proof){
-
-            return resetButton(
-                button
-            );
-
+            return;
         }
 
 
@@ -547,11 +511,7 @@ async function applyJob(
 
 
         if(!proposal){
-
-            return resetButton(
-                button
-            );
-
+            return;
         }
 
 
@@ -583,11 +543,7 @@ async function applyJob(
 
 
         if(!cv){
-
-            return resetButton(
-                button
-            );
-
+            return;
         }
 
 
@@ -620,11 +576,7 @@ async function applyJob(
 
 
         if(!portfolio){
-
-            return resetButton(
-                button
-            );
-
+            return;
         }
 
 
@@ -651,7 +603,7 @@ async function applyJob(
         const res =
         await fetch(
 
-            API+
+            API +
             endpoint,
 
             {
@@ -681,24 +633,31 @@ async function applyJob(
             !res.ok
         ){
 
-            throw 0;
+            popup(
+                "Could not apply"
+            );
+
+            return;
 
         }
 
 
-
-        const card =
+        const jobCard =
         document.getElementById(
-            "job-"+jobId
+
+            "job-" +
+            jobId
+
         );
 
 
-        if(card){
+        if(
+            jobCard
+        ){
 
-            card.remove();
+            jobCard.remove();
 
         }
-
 
 
         popup(
@@ -708,35 +667,13 @@ async function applyJob(
 
     }catch{
 
-        resetButton(
-            button
-        );
-
-
         popup(
-            "Could not apply"
+            "Connection failed"
         );
 
     }
 
 }
-
-
-
-
-function resetButton(
-    button
-){
-
-    button.disabled =
-    false;
-
-
-    button.innerHTML =
-    "Apply";
-
-}
-
 
 
 
@@ -756,6 +693,7 @@ function popup(
             z-50
         ">
 
+
             <div class="
                 modal
                 bg-white
@@ -766,6 +704,7 @@ function popup(
                 max-w-sm
             ">
 
+
                 <div class="
                     text-5xl
                     mb-4
@@ -773,11 +712,13 @@ function popup(
                     ✅
                 </div>
 
+
                 <p class="
                     font-bold
                 ">
                     ${message}
                 </p>
+
 
             </div>
 
@@ -803,7 +744,6 @@ function popup(
 
 
 
-
 function empty(){
 
     return `
@@ -814,13 +754,14 @@ function empty(){
             p-6
             text-center
         ">
+
             No jobs available
+
         </div>
 
     ";
 
 }
-
 
 
 
@@ -832,13 +773,17 @@ function nav(
     return `
 
         <a
+
             href="${page}"
+
             class="
                 nav-btn
                 text-2xl
             "
         >
+
             ${icon}
+
         </a>
 
     ";
