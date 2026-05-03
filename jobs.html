@@ -46,7 +46,6 @@
 <div id="app"></div>
 
 
-
 <div
     id="loader"
 
@@ -75,9 +74,7 @@
 </div>
 
 
-
 <div id="modal"></div>
-
 
 
 <script>
@@ -97,9 +94,11 @@ localStorage.getItem(
 
 const user =
 JSON.parse(
+
     localStorage.getItem(
         "user"
-    )
+    ) || "{}"
+
 );
 
 
@@ -111,9 +110,25 @@ if(!token){
 }
 
 
-
 load();
 
+
+
+function authHeader(){
+
+    return {
+
+        headers:{
+
+            Authorization:
+            "Bearer "+
+            token
+
+        }
+
+    };
+
+}
 
 
 
@@ -121,38 +136,84 @@ async function load(){
 
     try{
 
-        const res =
-        await fetch(
-
-            API+
-            "/api/users/tasks",
-
-            {
-
-                headers:{
-                    Authorization:
-                    "Bearer "+
-                    token
-                }
-
-            }
-
-        );
+        loader.style.display =
+        "flex";
 
 
+        const responses =
+        await Promise.all([
 
-        const jobs =
-        await res.json();
+            fetch(
+                API+
+                "/api/users/tasks",
+                authHeader()
+            ),
+
+            fetch(
+                API+
+                "/api/users/freelance-jobs",
+                authHeader()
+            ),
+
+            fetch(
+                API+
+                "/api/users/hiring-jobs",
+                authHeader()
+            ),
+
+            fetch(
+                API+
+                "/api/users/influencer-jobs",
+                authHeader()
+            )
+
+        ]);
 
 
+        const tasks =
+        await responses[0].json();
 
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
-        "none";
+        const freelance =
+        await responses[1].json();
 
+        const hiring =
+        await responses[2].json();
+
+        const influencer =
+        await responses[3].json();
+
+
+        const jobs = [
+
+            ...tasks.map(
+                x=>({
+                    ...x,
+                    type:"TASK"
+                })
+            ),
+
+            ...freelance.map(
+                x=>({
+                    ...x,
+                    type:"FREELANCE"
+                })
+            ),
+
+            ...hiring.map(
+                x=>({
+                    ...x,
+                    type:"HIRING"
+                })
+            ),
+
+            ...influencer.map(
+                x=>({
+                    ...x,
+                    type:"INFLUENCER"
+                })
+            )
+
+        ];
 
 
         render(
@@ -160,18 +221,19 @@ async function load(){
         );
 
 
+    }catch{
 
-    }catch(error){
-
-        location =
-        "login.html";
+        popup(
+            "Connection failed"
+        );
 
     }
 
+
+    loader.style.display =
+    "none";
+
 }
-
-
-
 
 
 
@@ -185,12 +247,10 @@ function currency(){
 
     }
 
+
     return "$";
 
 }
-
-
-
 
 
 
@@ -198,11 +258,7 @@ function render(
     jobs
 ){
 
-    document
-    .getElementById(
-        "app"
-    )
-    .innerHTML = `
+    app.innerHTML = `
 
         <div class="
             p-4
@@ -219,26 +275,26 @@ function render(
             </h1>
 
 
-
-
             ${
 
+                jobs.length
+
+                ?
+
                 jobs.map(
-
-                    job=>card(
-                        job
-                    )
-
+                    card
                 ).join(
                     ""
                 )
+
+                :
+
+                empty()
 
             }
 
 
         </div>
-
-
 
 
         <div class="
@@ -255,7 +311,7 @@ function render(
         ">
 
             ${nav("🏠","dashboard.html")}
-            ${nav("💰","jobs.html")}
+            ${nav("💼","jobs.html")}
             ${nav("🔔","notifications.html")}
             ${nav("👤","profile.html")}
 
@@ -267,38 +323,23 @@ function render(
 
 
 
-
-
-
 function card(
     job
 ){
 
-    const reward =
-    Number(
-        job.reward
-    )
-    .toLocaleString();
-
-
-
-    const category =
-    job.category ||
-    "GENERAL";
-
-
-
     return `
 
-        <div class="
-            bg-white
-            rounded-[28px]
-            p-5
-            shadow
-            mb-4
-        ">
+        <div
+            id="job-${job.id}"
 
-
+            class="
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
+                mb-4
+            "
+        >
 
 
             <div class="
@@ -315,7 +356,6 @@ function card(
                 </h3>
 
 
-
                 <span class="
                     text-xs
                     bg-blue-100
@@ -325,13 +365,11 @@ function card(
                     rounded-full
                 ">
 
-                    ${category}
+                    ${job.type}
 
                 </span>
 
             </div>
-
-
 
 
             <p class="
@@ -339,11 +377,9 @@ function card(
                 mb-4
             ">
 
-                ${job.description}
+                ${job.description || ""}
 
             </p>
-
-
 
 
             <div class="
@@ -353,19 +389,21 @@ function card(
             ">
 
                 ${currency()}
-                ${reward}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
 
             </div>
 
 
-
-
             <button
 
+                id="btn-${job.id}"
+
                 onclick="
-                    submitTask(
+                    applyJob(
                         ${job.id},
-                        '${category}'
+                        '${job.type}'
                     )
                 "
 
@@ -379,127 +417,202 @@ function card(
                 "
             >
 
-                Submit Job
+                Apply
 
             </button>
 
+
         </div>
 
-    `;
+    ";
 
 }
 
 
 
-
-
-
-function submitTask(
-    taskId,
-    category
+async function applyJob(
+    jobId,
+    type
 ){
 
-    let label =
-    "Proof link / text";
-
-
-
-    if(
-        category==="APP"
-    ){
-
-        label =
-        "Screenshot URL";
-
-    }
-
-
-
-    if(
-        category==="SURVEY"
-    ){
-
-        label =
-        "Completion code";
-
-    }
-
-
-
-    if(
-        category==="FREELANCE"
-    ){
-
-        label =
-        "Portfolio / file URL";
-
-    }
-
-
-
-    if(
-        category==="INFLUENCER"
-    ){
-
-        label =
-        "Post URL";
-
-    }
-
-
-
-    const proof =
-    prompt(
-        label
+    const button =
+    document.getElementById(
+        "btn-"+jobId
     );
 
 
+    button.disabled =
+    true;
 
-    if(!proof){
 
-        return;
+    button.innerHTML =
+    "Processing...";
+
+
+    let endpoint =
+    "";
+
+    let payload =
+    {};
+
+
+    if(
+        type==="TASK"
+    ){
+
+        const proof =
+        prompt(
+            "Proof"
+        );
+
+
+        if(!proof){
+
+            resetButton(
+                button
+            );
+
+            return;
+
+        }
+
+
+        endpoint =
+        "/api/users/submit-task";
+
+        payload = {
+
+            task_id:
+            jobId,
+
+            proof
+
+        };
 
     }
 
 
+    if(
+        type==="FREELANCE"
+    ){
 
-    saveTask(
-        taskId,
-        proof
-    );
-
-}
-
-
-
+        const proposal =
+        prompt(
+            "Proposal"
+        );
 
 
+        if(!proposal){
 
-async function saveTask(
-    taskId,
-    proof
-){
+            resetButton(
+                button
+            );
 
-    document
-    .getElementById(
-        "loader"
-    )
-    .style.display =
-    "flex";
+            return;
 
+        }
+
+
+        endpoint =
+        "/api/users/apply-freelance";
+
+        payload = {
+
+            job_id:
+            jobId,
+
+            proposal
+
+        };
+
+    }
+
+
+    if(
+        type==="HIRING"
+    ){
+
+        const cv =
+        prompt(
+            "CV Link"
+        );
+
+
+        if(!cv){
+
+            resetButton(
+                button
+            );
+
+            return;
+
+        }
+
+
+        endpoint =
+        "/api/users/apply-hiring";
+
+        payload = {
+
+            job_id:
+            jobId,
+
+            cv_link:
+            cv
+
+        };
+
+    }
+
+
+    if(
+        type==="INFLUENCER"
+    ){
+
+        const portfolio =
+        prompt(
+            "Portfolio Link"
+        );
+
+
+        if(!portfolio){
+
+            resetButton(
+                button
+            );
+
+            return;
+
+        }
+
+
+        endpoint =
+        "/api/users/apply-influencer";
+
+        payload = {
+
+            job_id:
+            jobId,
+
+            portfolio_link:
+            portfolio
+
+        };
+
+    }
 
 
     try{
 
+        const res =
         await fetch(
 
             API+
-            "/api/users/submit-task",
+            endpoint,
 
             {
 
                 method:"POST",
-
 
                 headers:{
 
@@ -507,58 +620,50 @@ async function saveTask(
                     "Bearer "+
                     token,
 
-
                     "Content-Type":
                     "application/json"
 
                 },
 
-
                 body:
-                JSON.stringify({
-
-                    task_id:
-                    taskId,
-
-
-                    proof
-
-                })
+                JSON.stringify(
+                    payload
+                )
 
             }
 
         );
 
 
+        if(
+            !res.ok
+        ){
+
+            throw new Error();
+
+        }
+
 
         document
         .getElementById(
-            "loader"
+            "job-"+jobId
         )
-        .style.display =
-        "none";
-
+        .remove();
 
 
         popup(
-            "Job submitted successfully"
+            "Application successful"
         );
 
 
+    }catch{
 
-    }catch(error){
-
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
-        "none";
-
-
+        resetButton(
+            button
+        );
 
         popup(
-            "Connection failed"
+            "Could not apply"
         );
 
     }
@@ -567,6 +672,18 @@ async function saveTask(
 
 
 
+function resetButton(
+    button
+){
+
+    button.disabled =
+    false;
+
+
+    button.innerHTML =
+    "Apply";
+
+}
 
 
 
@@ -574,11 +691,7 @@ function popup(
     message
 ){
 
-    document
-    .getElementById(
-        "modal"
-    )
-    .innerHTML = `
+    modal.innerHTML = `
 
         <div class="
             fixed
@@ -622,16 +735,11 @@ function popup(
     `;
 
 
-
     setTimeout(
 
         ()=>{
 
-            document
-            .getElementById(
-                "modal"
-            )
-            .innerHTML =
+            modal.innerHTML =
             "";
 
         },
@@ -644,6 +752,24 @@ function popup(
 
 
 
+function empty(){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            text-center
+        ">
+
+            No jobs available
+
+        </div>
+
+    `;
+
+}
 
 
 
@@ -668,7 +794,7 @@ function nav(
 
         </a>
 
-    `;
+    ";
 
 }
 
