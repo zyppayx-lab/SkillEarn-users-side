@@ -22,24 +22,21 @@ body{
     transform:scale(.85);
 }
 
-.active-tab{
-    background:#2563eb;
-    color:white;
+.float-card{
+    animation:floatCard 3s infinite;
 }
 
-.fade{
-    animation:fade .3s;
-}
+@keyframes floatCard{
 
-@keyframes fade{
-
-    from{
-        opacity:0;
-        transform:translateY(10px);
+    0%{
+        transform:translateY(0);
     }
 
-    to{
-        opacity:1;
+    50%{
+        transform:translateY(-3px);
+    }
+
+    100%{
         transform:translateY(0);
     }
 
@@ -119,14 +116,12 @@ if(!token){
 
 
 
-let current =
-"TASK";
+let jobs =
+[];
 
 
 
-load(
-    "TASK"
-);
+load();
 
 
 
@@ -151,59 +146,7 @@ function currency(){
 
 
 
-function endpoint(
-    type
-){
-
-    if(
-        type==="TASK"
-    ){
-
-        return "/api/users/tasks";
-
-    }
-
-
-    if(
-        type==="FREELANCE"
-    ){
-
-        return
-        "/api/users/freelance-jobs";
-
-    }
-
-
-    if(
-        type==="HIRING"
-    ){
-
-        return
-        "/api/users/hiring-jobs";
-
-    }
-
-
-    return
-    "/api/users/influencer-jobs";
-
-}
-
-
-
-
-
-async function load(
-    type
-){
-
-    current =
-    type;
-
-
-    loader.style.display =
-    "flex";
-
+async function load(){
 
     try{
 
@@ -212,9 +155,7 @@ async function load(
         await fetch(
 
             API+
-            endpoint(
-                type
-            ),
+            "/api/users/tasks",
 
             {
 
@@ -230,8 +171,21 @@ async function load(
 
 
 
-        const jobs =
+        jobs =
         await res.json();
+
+
+
+        if(
+            !Array.isArray(
+                jobs
+            )
+        ){
+
+            jobs =
+            [];
+
+        }
 
 
 
@@ -240,31 +194,7 @@ async function load(
 
 
 
-        render(
-
-            Array.isArray(
-                jobs
-            )
-
-            ?
-
-            jobs.map(
-
-                x=>({
-
-                    ...x,
-
-                    type
-
-                })
-
-            )
-
-            :
-
-            []
-
-        );
+        render();
 
 
 
@@ -275,9 +205,11 @@ async function load(
         "none";
 
 
-        render(
-            []
-        );
+        jobs =
+        [];
+
+
+        render();
 
     }
 
@@ -287,42 +219,56 @@ async function load(
 
 
 
-function render(
-    jobs
-){
+function render(){
 
     app.innerHTML = `
 
         <div class="
-            p-4
             pb-28
+            p-4
         ">
 
 
 
-            <h1 class="
+
+            <h2 class="
                 text-2xl
                 font-bold
                 mb-4
             ">
                 Jobs
-            </h1>
+            </h2>
 
 
 
 
-            <!-- CATEGORIES -->
+            <!-- categories -->
             <div class="
                 flex
                 gap-2
-                overflow-x-auto
                 mb-5
+                overflow-x-auto
             ">
 
-                ${tab("TASK")}
-                ${tab("FREELANCE")}
-                ${tab("INFLUENCER")}
-                ${tab("HIRING")}
+                ${tab(
+                    "📱 Tasks",
+                    "jobs.html"
+                )}
+
+                ${tab(
+                    "💻 Freelancing",
+                    "freelance.html"
+                )}
+
+                ${tab(
+                    "🏢 Hiring",
+                    "hiring.html"
+                )}
+
+                ${tab(
+                    "⭐ Influencer",
+                    "influencer.html"
+                )}
 
             </div>
 
@@ -358,6 +304,7 @@ function render(
             left-0
             right-0
             bg-white
+            shadow-2xl
             border-t
             grid
             grid-cols-4
@@ -380,56 +327,6 @@ function render(
 
 
 
-function tab(
-    type
-){
-
-    return `
-
-        <button
-
-            onclick="
-                load(
-                    '${type}'
-                )
-            "
-
-            class="
-                px-4
-                py-2
-                rounded-full
-                bg-white
-                shadow
-                whitespace-nowrap
-
-                ${
-
-                    current===type
-
-                    ?
-
-                    "active-tab"
-
-                    :
-
-                    ""
-
-                }
-            "
-        >
-
-            ${type}
-
-        </button>
-
-    ";
-
-}
-
-
-
-
-
 function card(
     job
 ){
@@ -437,13 +334,14 @@ function card(
     return `
 
         <div class="
-            fade
+            float-card
             bg-white
             rounded-[28px]
             p-5
             shadow
-            mb-4
+            mb-5
         ">
+
 
 
 
@@ -453,36 +351,52 @@ function card(
                 mb-3
             ">
 
-
-                <b>
-
-                    ${job.title || "Untitled"}
-
-                </b>
-
-
-
                 <span class="
-                    text-xs
                     bg-blue-100
                     text-blue-700
                     px-3
                     py-1
                     rounded-full
+                    text-xs
+                    font-bold
+                ">
+                    TASK
+                </span>
+
+
+
+                <b class="
+                    text-blue-600
                 ">
 
-                    ${job.type}
+                    ${currency()}
+                    ${Number(
+                        job.reward || 0
+                    ).toLocaleString()}
 
-                </span>
+                </b>
 
             </div>
 
 
 
 
+            <h3 class="
+                text-lg
+                font-bold
+                mb-3
+            ">
+
+                ${job.title || "Untitled"}
+
+            </h3>
+
+
+
+
             <p class="
                 text-slate-500
-                mb-4
+                mb-5
             ">
 
                 ${job.description || ""}
@@ -492,22 +406,167 @@ function card(
 
 
 
-            <b class="
-                text-blue-600
-            ">
+            <button
 
-                ${currency()}
-                ${Number(
-                    job.reward || 0
-                ).toLocaleString()}
+                onclick="
+                    handleTask(
+                        ${job.id}
+                    )
+                "
 
-            </b>
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                    font-bold
+                "
+
+                id="
+                    btn-${job.id}
+                "
+
+            >
+
+                Apply
+
+            </button>
 
 
 
         </div>
 
     ";
+
+}
+
+
+
+
+
+async function handleTask(
+    taskId
+){
+
+    const btn =
+    document.getElementById(
+
+        "btn-"+taskId
+
+    );
+
+
+
+    if(
+
+        btn.innerText ===
+        "Apply"
+
+    ){
+
+        btn.innerText =
+        "Submit Proof";
+
+
+        return;
+
+    }
+
+
+
+    const proof =
+    prompt(
+        "Paste proof link"
+    );
+
+
+
+    if(
+        !proof
+    ){
+
+        return;
+
+    }
+
+
+
+    btn.innerText =
+    "Submitting...";
+
+
+
+    try{
+
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/submit-task",
+
+            {
+
+                method:
+                "POST",
+
+
+                headers:{
+
+                    Authorization:
+                    "Bearer "+
+                    token,
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+
+                body:
+                JSON.stringify({
+
+                    task_id:
+                    taskId,
+
+                    proof:
+                    proof
+
+                })
+
+            }
+
+        );
+
+
+
+        if(
+            !res.ok
+        ){
+
+            throw "";
+
+        }
+
+
+
+        btn.innerText =
+        "Submitted ✅";
+
+
+        btn.disabled =
+        true;
+
+
+
+    }catch{
+
+
+        btn.innerText =
+        "Submit Proof";
+
+    }
 
 }
 
@@ -522,13 +581,48 @@ function empty(){
         <div class="
             bg-white
             rounded-[28px]
-            p-6
+            p-8
             text-center
+            shadow
         ">
 
-            No jobs available
+            No tasks available
 
         </div>
+
+    ";
+
+}
+
+
+
+
+
+function tab(
+    text,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                whitespace-nowrap
+                bg-white
+                shadow
+                px-4
+                py-2
+                rounded-full
+                font-semibold
+            "
+        >
+
+            ${text}
+
+        </a>
 
     ";
 
@@ -566,4 +660,4 @@ function nav(
 </script>
 
 </body>
-</html>
+    </html>
