@@ -9,7 +9,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-
 .nav-btn{
     transition:.25s;
 }
@@ -23,7 +22,6 @@
 }
 
 @keyframes pop{
-
     from{
         transform:scale(.8);
         opacity:0;
@@ -33,22 +31,17 @@
         transform:scale(1);
         opacity:1;
     }
-
 }
-
 </style>
 
 </head>
-
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
-
 <div
     id="loader"
-
     class="
         fixed
         inset-0
@@ -73,9 +66,7 @@
 
 </div>
 
-
 <div id="modal"></div>
-
 
 <script>
 
@@ -94,11 +85,27 @@ localStorage.getItem(
 
 const user =
 JSON.parse(
-
     localStorage.getItem(
         "user"
     ) || "{}"
+);
 
+
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
+const modal =
+document.getElementById(
+    "modal"
 );
 
 
@@ -110,21 +117,19 @@ if(!token){
 }
 
 
+
 load();
 
 
 
-function authHeader(){
+
+function authHeaders(){
 
     return {
 
-        headers:{
-
-            Authorization:
-            "Bearer "+
-            token
-
-        }
+        Authorization:
+        "Bearer "+
+        token
 
     };
 
@@ -132,55 +137,97 @@ function authHeader(){
 
 
 
-async function load(){
+
+async function safeFetch(
+    endpoint
+){
 
     try{
 
-        loader.style.display =
-        "flex";
+        const res =
+        await fetch(
+
+            API+
+            endpoint,
+
+            {
+
+                headers:
+                authHeaders()
+
+            }
+
+        );
 
 
-        const responses =
-        await Promise.all([
+        if(
+            !res.ok
+        ){
 
-            fetch(
-                API+
-                "/api/users/tasks",
-                authHeader()
-            ),
+            return [];
 
-            fetch(
-                API+
-                "/api/users/freelance-jobs",
-                authHeader()
-            ),
+        }
 
-            fetch(
-                API+
-                "/api/users/hiring-jobs",
-                authHeader()
-            ),
 
-            fetch(
-                API+
-                "/api/users/influencer-jobs",
-                authHeader()
+        const data =
+        await res.json();
+
+
+        if(
+            !Array.isArray(
+                data
             )
+        ){
 
-        ]);
+            return [];
 
+        }
+
+
+        return data;
+
+
+    }catch{
+
+        return [];
+
+    }
+
+}
+
+
+
+
+async function load(){
+
+    loader.style.display =
+    "flex";
+
+
+    try{
 
         const tasks =
-        await responses[0].json();
+        await safeFetch(
+            "/api/users/tasks"
+        );
+
 
         const freelance =
-        await responses[1].json();
+        await safeFetch(
+            "/api/users/freelance-jobs"
+        );
+
 
         const hiring =
-        await responses[2].json();
+        await safeFetch(
+            "/api/users/hiring-jobs"
+        );
+
 
         const influencer =
-        await responses[3].json();
+        await safeFetch(
+            "/api/users/influencer-jobs"
+        );
 
 
         const jobs = [
@@ -221,19 +268,15 @@ async function load(){
         );
 
 
-    }catch{
+    }finally{
 
-        popup(
-            "Connection failed"
-        );
+        loader.style.display =
+        "none";
 
     }
 
-
-    loader.style.display =
-    "none";
-
 }
+
 
 
 
@@ -254,6 +297,7 @@ function currency(){
 
 
 
+
 function render(
     jobs
 ){
@@ -264,7 +308,6 @@ function render(
             p-4
             pb-28
         ">
-
 
             <h1 class="
                 text-2xl
@@ -292,7 +335,6 @@ function render(
                 empty()
 
             }
-
 
         </div>
 
@@ -323,6 +365,7 @@ function render(
 
 
 
+
 function card(
     job
 ){
@@ -341,7 +384,6 @@ function card(
             "
         >
 
-
             <div class="
                 flex
                 justify-between
@@ -352,7 +394,7 @@ function card(
                     font-bold
                     text-lg
                 ">
-                    ${job.title}
+                    ${job.title || "Untitled"}
                 </h3>
 
 
@@ -421,12 +463,12 @@ function card(
 
             </button>
 
-
         </div>
 
     ";
 
 }
+
 
 
 
@@ -452,8 +494,10 @@ async function applyJob(
     let endpoint =
     "";
 
+
     let payload =
     {};
+
 
 
     if(
@@ -468,17 +512,16 @@ async function applyJob(
 
         if(!proof){
 
-            resetButton(
+            return resetButton(
                 button
             );
-
-            return;
 
         }
 
 
         endpoint =
         "/api/users/submit-task";
+
 
         payload = {
 
@@ -490,6 +533,7 @@ async function applyJob(
         };
 
     }
+
 
 
     if(
@@ -504,17 +548,16 @@ async function applyJob(
 
         if(!proposal){
 
-            resetButton(
+            return resetButton(
                 button
             );
-
-            return;
 
         }
 
 
         endpoint =
         "/api/users/apply-freelance";
+
 
         payload = {
 
@@ -526,6 +569,7 @@ async function applyJob(
         };
 
     }
+
 
 
     if(
@@ -540,17 +584,16 @@ async function applyJob(
 
         if(!cv){
 
-            resetButton(
+            return resetButton(
                 button
             );
-
-            return;
 
         }
 
 
         endpoint =
         "/api/users/apply-hiring";
+
 
         payload = {
 
@@ -565,6 +608,7 @@ async function applyJob(
     }
 
 
+
     if(
         type==="INFLUENCER"
     ){
@@ -577,17 +621,16 @@ async function applyJob(
 
         if(!portfolio){
 
-            resetButton(
+            return resetButton(
                 button
             );
-
-            return;
 
         }
 
 
         endpoint =
         "/api/users/apply-influencer";
+
 
         payload = {
 
@@ -600,6 +643,7 @@ async function applyJob(
         };
 
     }
+
 
 
     try{
@@ -616,9 +660,7 @@ async function applyJob(
 
                 headers:{
 
-                    Authorization:
-                    "Bearer "+
-                    token,
+                    ...authHeaders(),
 
                     "Content-Type":
                     "application/json"
@@ -639,16 +681,24 @@ async function applyJob(
             !res.ok
         ){
 
-            throw new Error();
+            throw 0;
 
         }
 
 
-        document
-        .getElementById(
+
+        const card =
+        document.getElementById(
             "job-"+jobId
-        )
-        .remove();
+        );
+
+
+        if(card){
+
+            card.remove();
+
+        }
+
 
 
         popup(
@@ -662,6 +712,7 @@ async function applyJob(
             button
         );
 
+
         popup(
             "Could not apply"
         );
@@ -669,6 +720,7 @@ async function applyJob(
     }
 
 }
+
 
 
 
@@ -684,6 +736,7 @@ function resetButton(
     "Apply";
 
 }
+
 
 
 
@@ -703,7 +756,6 @@ function popup(
             z-50
         ">
 
-
             <div class="
                 modal
                 bg-white
@@ -720,7 +772,6 @@ function popup(
                 ">
                     ✅
                 </div>
-
 
                 <p class="
                     font-bold
@@ -752,6 +803,7 @@ function popup(
 
 
 
+
 function empty(){
 
     return `
@@ -762,14 +814,13 @@ function empty(){
             p-6
             text-center
         ">
-
             No jobs available
-
         </div>
 
-    `;
+    ";
 
 }
+
 
 
 
@@ -781,17 +832,13 @@ function nav(
     return `
 
         <a
-
             href="${page}"
-
             class="
                 nav-btn
                 text-2xl
             "
         >
-
             ${icon}
-
         </a>
 
     ";
