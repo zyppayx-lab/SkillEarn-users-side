@@ -22,127 +22,120 @@ body{
     transform:scale(.85);
 }
 
-.float-card{
-    animation:floatCard 3s infinite;
+.fade{
+    animation:fade .3s;
 }
 
-@keyframes floatCard{
-
-    0%{
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
         transform:translateY(0);
     }
-
-    50%{
-        transform:translateY(-3px);
-    }
-
-    100%{
-        transform:translateY(0);
-    }
-
 }
 
 </style>
 
 </head>
 
-
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
+<div id="loader"
+class="fixed inset-0 bg-black/10 z-50 flex items-center justify-center">
 
-<div
-    id="loader"
-
-    class="
-        fixed
-        inset-0
-        bg-black/10
-        z-50
-        flex
-        items-center
-        justify-center
-    "
->
-
-    <div class="
-        w-16
-        h-16
-        rounded-full
-        border-[5px]
-        border-blue-100
-        border-t-blue-600
-        animate-spin
-        bg-white
-    "></div>
+<div class="w-16 h-16 rounded-full border-[5px] border-blue-100 border-t-blue-600 animate-spin bg-white"></div>
 
 </div>
-
-
 
 <script>
 
 "use strict";
 
-
 const API =
 "https://skillearn.onrender.com";
 
-
 const token =
-localStorage.getItem(
-    "token"
-);
-
+localStorage.getItem("token");
 
 const user =
 JSON.parse(
-
-    localStorage.getItem(
-        "user"
-    ) || "{}"
-
+localStorage.getItem("user") || "{}"
 );
 
-
-
 if(!token){
-
-    location =
-    "login.html";
-
+    location="login.html";
 }
-
-
-
-let jobs =
-[];
-
 
 
 load();
 
 
-
-
-
 function currency(){
 
-    if(
-        user.country==="NG"
-    ){
-
-        return "₦";
-
-    }
-
-
-    return "$";
+    return user.country==="NG"
+    ? "₦"
+    : "$";
 
 }
 
 
+async function fetchWithTimeout(url){
+
+    const controller =
+    new AbortController();
+
+    const timeout =
+    setTimeout(
+
+        ()=>controller.abort(),
+
+        8000
+
+    );
+
+    try{
+
+        const res =
+        await fetch(
+
+            url,
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+token
+                },
+
+                signal:
+                controller.signal
+
+            }
+
+        );
+
+        clearTimeout(
+            timeout
+        );
+
+        return res;
+
+    }catch{
+
+        clearTimeout(
+            timeout
+        );
+
+        throw Error();
+
+    }
+
+}
 
 
 
@@ -150,66 +143,50 @@ async function load(){
 
     try{
 
-
         const res =
-        await fetch(
+        await fetchWithTimeout(
 
             API+
-            "/api/users/tasks",
-
-            {
-
-                headers:{
-                    Authorization:
-                    "Bearer "+
-                    token
-                }
-
-            }
+            "/api/users/tasks"
 
         );
 
 
+        let jobs=[];
 
-        jobs =
-        await res.json();
-
-
-
-        if(
-            !Array.isArray(
-                jobs
-            )
-        ){
+        if(res.ok){
 
             jobs =
-            [];
+            await res.json();
 
         }
 
 
-
-        loader.style.display =
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
         "none";
 
 
-
-        render();
-
-
+        render(
+            Array.isArray(
+                jobs
+            ) ? jobs : []
+        );
 
     }catch{
 
-
-        loader.style.display =
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
         "none";
 
 
-        jobs =
-        [];
-
-
-        render();
+        render([]);
 
     }
 
@@ -217,113 +194,87 @@ async function load(){
 
 
 
+function render(
+    jobs
+){
+
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
+
+    <div class="p-4 pb-28">
 
 
-function render(){
+        <h1 class="text-2xl font-bold mb-5">
 
-    app.innerHTML = `
+            Jobs
 
-        <div class="
-            pb-28
-            p-4
-        ">
+        </h1>
 
 
+        <div class="grid grid-cols-4 gap-2 mb-5">
 
+            ${tab(
+                "Tasks",
+                "jobs.html"
+            )}
 
-            <h2 class="
-                text-2xl
-                font-bold
-                mb-4
-            ">
-                Jobs
-            </h2>
+            ${tab(
+                "Freelance",
+                "freelance.html"
+            )}
 
+            ${tab(
+                "Hiring",
+                "hiring.html"
+            )}
 
-
-
-            <!-- categories -->
-            <div class="
-                flex
-                gap-2
-                mb-5
-                overflow-x-auto
-            ">
-
-                ${tab(
-                    "📱 Tasks",
-                    "jobs.html"
-                )}
-
-                ${tab(
-                    "💻 Freelancing",
-                    "freelance.html"
-                )}
-
-                ${tab(
-                    "🏢 Hiring",
-                    "hiring.html"
-                )}
-
-                ${tab(
-                    "⭐ Influencer",
-                    "influencer.html"
-                )}
-
-            </div>
-
-
-
-
-            ${
-
-                jobs.length
-
-                ?
-
-                jobs.map(
-                    card
-                ).join("")
-
-                :
-
-                empty()
-
-            }
-
-
+            ${tab(
+                "Influencer",
+                "influencer.html"
+            )}
 
         </div>
 
 
+        ${
+
+            jobs.length
+
+            ?
+
+            jobs.map(
+                card
+            ).join("")
+
+            :
+
+            empty()
+
+        }
 
 
-        <div class="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            bg-white
-            shadow-2xl
-            border-t
-            grid
-            grid-cols-4
-            p-3
-            text-center
-        ">
+    </div>
 
-            ${nav("🏠","dashboard.html")}
-            ${nav("💼","jobs.html")}
-            ${nav("🔔","notifications.html")}
-            ${nav("👤","profile.html")}
 
-        </div>
+    <div class="
+    fixed bottom-0 left-0 right-0
+    bg-white border-t
+    grid grid-cols-4
+    p-3 text-center">
+
+        ${nav("🏠","dashboard.html")}
+        ${nav("💼","jobs.html")}
+        ${nav("🔔","notifications.html")}
+        ${nav("👤","profile.html")}
+
+    </div>
 
     `;
 
 }
-
-
 
 
 
@@ -333,244 +284,75 @@ function card(
 
     return `
 
+    <div class="
+    fade bg-white
+    rounded-[28px]
+    p-5 shadow mb-4">
+
+
+        <h3 class="
+        font-bold
+        text-lg mb-2">
+
+            ${job.title || "Task"}
+
+        </h3>
+
+
+        <p class="
+        text-slate-500
+        mb-4">
+
+            ${job.description || ""}
+
+        </p>
+
+
         <div class="
-            float-card
-            bg-white
-            rounded-[28px]
-            p-5
-            shadow
-            mb-5
-        ">
+        text-blue-600
+        font-bold mb-4">
 
-
-
-
-            <div class="
-                flex
-                justify-between
-                mb-3
-            ">
-
-                <span class="
-                    bg-blue-100
-                    text-blue-700
-                    px-3
-                    py-1
-                    rounded-full
-                    text-xs
-                    font-bold
-                ">
-                    TASK
-                </span>
-
-
-
-                <b class="
-                    text-blue-600
-                ">
-
-                    ${currency()}
-                    ${Number(
-                        job.reward || 0
-                    ).toLocaleString()}
-
-                </b>
-
-            </div>
-
-
-
-
-            <h3 class="
-                text-lg
-                font-bold
-                mb-3
-            ">
-
-                ${job.title || "Untitled"}
-
-            </h3>
-
-
-
-
-            <p class="
-                text-slate-500
-                mb-5
-            ">
-
-                ${job.description || ""}
-
-            </p>
-
-
-
-
-            <button
-
-                onclick="
-                    handleTask(
-                        ${job.id}
-                    )
-                "
-
-                class="
-                    w-full
-                    bg-blue-600
-                    text-white
-                    py-3
-                    rounded-2xl
-                    font-bold
-                "
-
-                id="
-                    btn-${job.id}
-                "
-
-            >
-
-                Apply
-
-            </button>
-
-
+            ${currency()}
+            ${Number(
+                job.reward || 0
+            ).toLocaleString()}
 
         </div>
 
-    ";
+
+        <button
+
+        onclick="
+        submitProof(
+        ${job.id}
+        )
+        "
+
+        class="
+        w-full bg-blue-600
+        text-white py-3
+        rounded-2xl">
+
+            Submit Proof
+
+        </button>
+
+    </div>
+
+    `;
 
 }
 
 
 
-
-
-async function handleTask(
-    taskId
+function submitProof(
+    id
 ){
 
-    const btn =
-    document.getElementById(
-
-        "btn-"+taskId
-
-    );
-
-
-
-    if(
-
-        btn.innerText ===
-        "Apply"
-
-    ){
-
-        btn.innerText =
-        "Submit Proof";
-
-
-        return;
-
-    }
-
-
-
-    const proof =
-    prompt(
-        "Paste proof link"
-    );
-
-
-
-    if(
-        !proof
-    ){
-
-        return;
-
-    }
-
-
-
-    btn.innerText =
-    "Submitting...";
-
-
-
-    try{
-
-
-        const res =
-        await fetch(
-
-            API+
-            "/api/users/submit-task",
-
-            {
-
-                method:
-                "POST",
-
-
-                headers:{
-
-                    Authorization:
-                    "Bearer "+
-                    token,
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-
-                body:
-                JSON.stringify({
-
-                    task_id:
-                    taskId,
-
-                    proof:
-                    proof
-
-                })
-
-            }
-
-        );
-
-
-
-        if(
-            !res.ok
-        ){
-
-            throw "";
-
-        }
-
-
-
-        btn.innerText =
-        "Submitted ✅";
-
-
-        btn.disabled =
-        true;
-
-
-
-    }catch{
-
-
-        btn.innerText =
-        "Submit Proof";
-
-    }
+    location =
+    "task-submit.html?id="+id;
 
 }
-
-
 
 
 
@@ -578,23 +360,17 @@ function empty(){
 
     return `
 
-        <div class="
-            bg-white
-            rounded-[28px]
-            p-8
-            text-center
-            shadow
-        ">
+    <div class="
+    bg-white rounded-[28px]
+    p-6 text-center">
 
-            No tasks available
+        No tasks available
 
-        </div>
+    </div>
 
-    ";
+    `;
 
 }
-
-
 
 
 
@@ -605,30 +381,20 @@ function tab(
 
     return `
 
-        <a
+    <a href="${page}"
 
-            href="${page}"
+    class="
+    bg-white shadow
+    rounded-xl p-3
+    text-center text-sm">
 
-            class="
-                whitespace-nowrap
-                bg-white
-                shadow
-                px-4
-                py-2
-                rounded-full
-                font-semibold
-            "
-        >
+        ${text}
 
-            ${text}
+    </a>
 
-        </a>
-
-    ";
+    `;
 
 }
-
-
 
 
 
@@ -639,25 +405,20 @@ function nav(
 
     return `
 
-        <a
+    <a href="${page}"
 
-            href="${page}"
+    class="
+    nav-btn text-2xl">
 
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
+        ${icon}
 
-            ${icon}
+    </a>
 
-        </a>
-
-    ";
+    `;
 
 }
 
 </script>
 
 </body>
-    </html>
+</html>
