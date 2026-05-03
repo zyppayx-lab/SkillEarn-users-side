@@ -1,31 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>SkillEarn Jobs</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+</style>
+
 </head>
+
 
 <body class="bg-slate-100">
 
-<div id="app"></div>
 
-<div
-    id="loader"
-    class="fixed inset-0 flex items-center justify-center bg-black/10 z-50"
->
-    <div class="
-        w-16
-        h-16
-        rounded-full
-        border-[5px]
-        border-blue-100
-        border-t-blue-600
-        animate-spin
+<div id="app" class="min-h-screen pb-20">
+
+
+    <!-- TOP -->
+    <header class="
+        bg-blue-600
+        text-white
+        px-4
+        py-4
+        shadow-md
+        sticky
+        top-0
+        z-50
+    ">
+
+        <div class="
+            max-w-6xl
+            mx-auto
+            flex
+            justify-between
+            items-center
+        ">
+
+            <h1 class="
+                text-xl
+                font-bold
+            ">
+                SkillEarn
+            </h1>
+
+
+            <button
+                onclick="logout()"
+                class="text-sm"
+            >
+                Logout
+            </button>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- CONTENT -->
+    <main
+        id="screen"
+
+        class="
+            max-w-6xl
+            mx-auto
+            p-4
+        "
+    ></main>
+
+
+
+    <!-- BOTTOM NAV -->
+    <nav class="
+        fixed
+        bottom-0
+        left-0
+        right-0
         bg-white
-    "></div>
+        border-t
+        grid
+        grid-cols-4
+        p-3
+        text-center
+    ">
+
+        <button
+            onclick="
+                location='dashboard.html'
+            "
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+            🏠
+        </button>
+
+
+        <button
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+            💼
+        </button>
+
+
+        <button
+            onclick="
+                location='notifications.html'
+            "
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+            🔔
+        </button>
+
+
+        <button
+            onclick="
+                location='profile.html'
+            "
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+            👤
+        </button>
+
+    </nav>
+
+
 </div>
+
+
 
 
 <script>
@@ -33,15 +165,9 @@
 "use strict";
 
 
-const app =
+const SCREEN =
 document.getElementById(
-    "app"
-);
-
-
-const loader =
-document.getElementById(
-    "loader"
+    "screen"
 );
 
 
@@ -65,12 +191,36 @@ JSON.parse(
 );
 
 
+
 if(!token){
 
     location =
     "login.html";
 
 }
+
+
+
+
+loadTasks();
+
+
+
+
+function currency(){
+
+    return user.country==="NG"
+
+    ?
+
+    "₦"
+
+    :
+
+    "$";
+
+}
+
 
 
 
@@ -88,7 +238,8 @@ function auth(){
 
 
 
-async function fetchList(
+
+async function fetchJobs(
     endpoint
 ){
 
@@ -118,14 +269,24 @@ async function fetchList(
         }
 
 
-        return await res.json();
+        const data =
+        await res.json();
 
-    }catch(error){
 
-        console.log(
-            endpoint,
-            error
-        );
+        return Array.isArray(
+            data
+        )
+
+        ?
+
+        data
+
+        :
+
+        [];
+
+
+    }catch{
 
         return [];
 
@@ -135,87 +296,91 @@ async function fetchList(
 
 
 
-async function load(){
 
-    try{
+async function loadTasks(){
 
-        const [
+    SCREEN.innerHTML = `
 
-            tasks,
+        <div class="
+            text-center
+            p-10
+        ">
+            Loading...
+        </div>
 
-            freelance,
-
-            hiring,
-
-            influencer
-
-        ] = await Promise.all([
-
-            fetchList(
-                "/api/users/tasks"
-            ),
-
-            fetchList(
-                "/api/users/freelance-jobs"
-            ),
-
-            fetchList(
-                "/api/users/hiring-jobs"
-            ),
-
-            fetchList(
-                "/api/users/influencer-jobs"
-            )
-
-        ]);
+    `;
 
 
-        const jobs = [
+    const [
 
-            ...tasks.map(
-                x=>({
-                    ...x,
-                    type:"TASK"
-                })
-            ),
+        tasks,
 
-            ...freelance.map(
-                x=>({
-                    ...x,
-                    type:"FREELANCE"
-                })
-            ),
+        freelance,
 
-            ...hiring.map(
-                x=>({
-                    ...x,
-                    type:"HIRING"
-                })
-            ),
+        hiring,
 
-            ...influencer.map(
-                x=>({
-                    ...x,
-                    type:"INFLUENCER"
-                })
-            )
+        influencer
 
-        ];
+    ] = await Promise.all([
+
+        fetchJobs(
+            "/api/users/tasks"
+        ),
+
+        fetchJobs(
+            "/api/users/freelance-jobs"
+        ),
+
+        fetchJobs(
+            "/api/users/hiring-jobs"
+        ),
+
+        fetchJobs(
+            "/api/users/influencer-jobs"
+        )
+
+    ]);
 
 
-        render(
-            jobs
-        );
+    const jobs = [
+
+        ...tasks.map(
+            x=>({
+                ...x,
+                type:"TASK"
+            })
+        ),
+
+        ...freelance.map(
+            x=>({
+                ...x,
+                type:"FREELANCE"
+            })
+        ),
+
+        ...hiring.map(
+            x=>({
+                ...x,
+                type:"HIRING"
+            })
+        ),
+
+        ...influencer.map(
+            x=>({
+                ...x,
+                type:"INFLUENCER"
+            })
+        )
+
+    ];
 
 
-    }finally{
-
-        loader.style.display =
-        "none";
-
-    }
+    render(
+        jobs
+    );
 
 }
+
 
 
 
@@ -223,73 +388,126 @@ function render(
     jobs
 ){
 
-    app.innerHTML = `
+    SCREEN.innerHTML = `
 
         <div class="
-            p-4
-            pb-28
+            mb-5
         ">
 
-            <h1 class="
+            <p class="
+                text-slate-500
+            ">
+                Browse Jobs 💼
+            </p>
+
+
+            <h2 class="
                 text-2xl
                 font-bold
-                mb-5
             ">
-                Available Jobs
-            </h1>
+                ${user.name || "User"}
+            </h2>
 
-            ${
+        </div>
 
-                jobs.length
 
-                ?
+        ${
 
-                jobs.map(
+            jobs.length
 
-                    job => `
+            ?
 
-                        <div class="
-                            bg-white
-                            rounded-[28px]
-                            p-5
-                            shadow
-                            mb-4
-                        ">
+            jobs.map(
+                card
+            ).join("")
 
-                            <h3 class="
-                                font-bold
-                                text-lg
-                            ">
-                                ${job.title || "Untitled"}
-                            </h3>
+            :
 
-                            <p class="
-                                text-slate-500
-                            ">
-                                ${job.type}
-                            </p>
+            empty()
 
-                        </div>
+        }
 
-                    `
+    `;
 
-                ).join("")
+}
 
-                :
 
-                `
 
-                    <div class="
-                        bg-white
-                        p-5
-                        rounded-[28px]
-                    ">
-                        No jobs available
-                    </div>
 
-                `
+function card(
+    job
+){
 
-            }
+    return `
+
+        <div
+
+            class="
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
+                mb-4
+            "
+        >
+
+
+            <div class="
+                flex
+                justify-between
+                mb-3
+            ">
+
+
+                <h3 class="
+                    font-bold
+                    text-lg
+                ">
+
+                    ${job.title || "Untitled"}
+
+                </h3>
+
+
+                <span class="
+                    text-xs
+                    bg-blue-100
+                    text-blue-700
+                    px-3
+                    py-1
+                    rounded-full
+                ">
+
+                    ${job.type}
+
+                </span>
+
+
+            </div>
+
+
+            <p class="
+                text-slate-600
+                mb-4
+            ">
+
+                ${job.description || ""}
+
+            </p>
+
+
+            <div class="
+                text-blue-600
+                font-bold
+            ">
+
+                ${currency()}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
+
+            </div>
+
 
         </div>
 
@@ -299,9 +517,41 @@ function render(
 
 
 
-load();
+
+function empty(){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            text-center
+            shadow
+        ">
+
+            No jobs available
+
+        </div>
+
+    ";
+
+}
+
+
+
+
+function logout(){
+
+    localStorage.clear();
+
+    location =
+    "login.html";
+
+}
 
 </script>
 
+
 </body>
-</html>
+    </html>
