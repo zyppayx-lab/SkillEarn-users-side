@@ -10,6 +10,10 @@
 
 <style>
 
+body{
+    font-family:sans-serif;
+}
+
 .nav-btn{
     transition:.25s;
 }
@@ -30,7 +34,6 @@
 
 <div
     id="loader"
-
     class="
         fixed
         inset-0
@@ -89,6 +92,13 @@ if(!token){
 
 
 
+load();
+
+
+
+
+function load(){
+
 fetch(
 
     "https://skillearn.onrender.com/api/users/hiring-jobs",
@@ -111,8 +121,20 @@ fetch(
 
     async res=>{
 
-        const list =
+        let list =
         await res.json();
+
+
+
+        if(
+            !Array.isArray(
+                list
+            )
+        ){
+
+            list = [];
+
+        }
 
 
 
@@ -126,15 +148,7 @@ fetch(
 
 
         if(
-
-            !Array.isArray(
-                list
-            )
-
-            ||
-
             list.length===0
-
         ){
 
             jobs = `
@@ -188,12 +202,35 @@ fetch(
 
                         <p class="
                             text-slate-500
-                            mb-3
+                            mb-4
                         ">
 
                             ${job.description||""}
 
                         </p>
+
+
+
+                        <button
+
+                            onclick="
+                                applyJob(
+                                    ${job.id}
+                                )
+                            "
+
+                            class="
+                                w-full
+                                bg-blue-600
+                                text-white
+                                py-3
+                                rounded-2xl
+                            "
+                        >
+
+                            Apply
+
+                        </button>
 
                     </div>
 
@@ -234,81 +271,61 @@ fetch(
 
 
                     <a
-
-                        href="jobs.html"
-
-                        class="
-                            bg-white
-                            shadow
-                            rounded-xl
-                            p-3
-                            text-center
-                            text-sm
-                        "
-                    >
-
-                        Tasks
-
+                    href="jobs.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Tasks
                     </a>
 
 
 
                     <a
-
-                        href="freelance.html"
-
-                        class="
-                            bg-white
-                            shadow
-                            rounded-xl
-                            p-3
-                            text-center
-                            text-sm
-                        "
-                    >
-
-                        Freelance
-
+                    href="freelance.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Freelance
                     </a>
 
 
 
                     <a
-
-                        href="hiring.html"
-
-                        class="
-                            bg-blue-600
-                            text-white
-                            rounded-xl
-                            p-3
-                            text-center
-                            text-sm
-                        "
-                    >
-
-                        Hiring
-
+                    href="hiring.html"
+                    class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Hiring
                     </a>
 
 
 
                     <a
-
-                        href="influencer.html"
-
-                        class="
-                            bg-white
-                            shadow
-                            rounded-xl
-                            p-3
-                            text-center
-                            text-sm
-                        "
-                    >
-
-                        Influencer
-
+                    href="influencer.html"
+                    class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                    ">
+                    Influencer
                     </a>
 
                 </div>
@@ -337,65 +354,33 @@ fetch(
 
 
                 <a
-
-                    href="dashboard.html"
-
-                    class="
-                        nav-btn
-                        text-2xl
-                    "
-                >
-
-                    🏠
-
+                href="dashboard.html"
+                class="nav-btn text-2xl">
+                🏠
                 </a>
 
 
 
                 <a
-
-                    href="jobs.html"
-
-                    class="
-                        nav-btn
-                        text-2xl
-                    "
-                >
-
-                    💼
-
+                href="jobs.html"
+                class="nav-btn text-2xl">
+                💼
                 </a>
 
 
 
                 <a
-
-                    href="notifications.html"
-
-                    class="
-                        nav-btn
-                        text-2xl
-                    "
-                >
-
-                    🔔
-
+                href="notifications.html"
+                class="nav-btn text-2xl">
+                🔔
                 </a>
 
 
 
                 <a
-
-                    href="profile.html"
-
-                    class="
-                        nav-btn
-                        text-2xl
-                    "
-                >
-
-                    👤
-
+                href="profile.html"
+                class="nav-btn text-2xl">
+                👤
                 </a>
 
             </div>
@@ -430,7 +415,107 @@ fetch(
 
 );
 
+}
+
+
+
+
+
+
+function applyJob(
+    id
+){
+
+    const cv =
+    prompt(
+        "Paste CV link"
+    );
+
+
+    if(
+        !cv
+    ){
+        return;
+    }
+
+
+
+    fetch(
+
+        "https://skillearn.onrender.com/api/users/apply-hiring",
+
+        {
+
+            method:"POST",
+
+            headers:{
+
+                Authorization:
+                "Bearer " +
+                token,
+
+                "Content-Type":
+                "application/json"
+
+            },
+
+            body:
+            JSON.stringify({
+
+                job_id:id,
+
+                cv_link:cv
+
+            })
+
+        }
+
+    )
+
+    .then(
+
+        res=>{
+
+            if(
+                !res.ok
+            ){
+
+                alert(
+                    "Application failed"
+                );
+
+                return;
+            }
+
+
+
+            alert(
+                "Application successful"
+            );
+
+
+
+            location.reload();
+
+        }
+
+    )
+
+    .catch(
+
+        ()=>{
+
+            alert(
+                "Connection failed"
+            );
+
+        }
+
+    );
+
+}
+
 </script>
 
 </body>
-</html>
+    </html>
