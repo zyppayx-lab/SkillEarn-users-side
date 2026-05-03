@@ -3,22 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Hiring</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+</style>
+
 </head>
+
 
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
+
 <div
     id="loader"
-    class="fixed inset-0 flex items-center justify-center bg-black/10"
+
+    class="
+        fixed
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/10
+        z-50
+    "
 >
-    <div class="text-xl">
-        Loading...
-    </div>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
 </div>
+
 
 
 <script>
@@ -26,16 +62,8 @@
 "use strict";
 
 
-const app =
-document.getElementById(
-    "app"
-);
-
-
-const loader =
-document.getElementById(
-    "loader"
-);
+const API =
+"https://skillearn.onrender.com";
 
 
 const token =
@@ -44,60 +72,114 @@ localStorage.getItem(
 );
 
 
-fetch(
+if(!token){
 
-    "https://skillearn.onrender.com/api/users/hiring-jobs",
+    location =
+    "login.html";
 
-    {
+}
 
-        headers:{
 
-            Authorization:
-            "Bearer " +
-            token
 
-        }
+load();
+
+
+
+
+async function load(){
+
+    try{
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/hiring-jobs",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
+            }
+
+        );
+
+
+
+        const list =
+        await res.json();
+
+
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render(
+            Array.isArray(
+                list
+            )
+            ? list
+            : []
+        );
+
+
+
+    }catch{
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render([]);
 
     }
 
-)
-
-.then(
-
-    async res=>{
-
-        const text =
-        await res.text();
+}
 
 
-        loader.remove();
 
 
-        app.innerHTML = `
+
+
+function render(
+    list
+){
+
+    let content =
+    "";
+
+
+
+    if(
+        list.length===0
+    ){
+
+        content = `
 
             <div class="
+                bg-white
+                rounded-[28px]
                 p-6
+                text-center
+                shadow
             ">
 
-                <h1 class="
-                    text-2xl
-                    font-bold
-                    mb-4
-                ">
-                    Hiring Test ✅
-                </h1>
-
-
-                <pre class="
-                    bg-white
-                    p-4
-                    rounded-xl
-                    overflow-auto
-                ">
-
-${text}
-
-                </pre>
+                No hiring jobs available
 
             </div>
 
@@ -105,35 +187,193 @@ ${text}
 
     }
 
-)
+    else{
 
-.catch(
+        content =
 
-    err=>{
+        list.map(
 
-        loader.remove();
+            card
 
-
-        app.innerHTML = `
-
-            <div class="
-                p-6
-                text-red-600
-            ">
-
-                ERROR:
-
-                ${err.message}
-
-            </div>
-
-        `;
+        ).join("");
 
     }
 
-);
+
+
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
+
+        <div class="
+            p-4
+            pb-28
+        ">
+
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+
+                Hiring Jobs
+
+            </h1>
+
+
+
+            ${tabs()}
+
+
+
+            ${content}
+
+        </div>
+
+
+
+        ${navBar()}
+
+    `;
+
+}
+
+
+
+
+
+
+function card(
+    job
+){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-5
+            shadow
+            mb-4
+        ">
+
+            <h3 class="
+                font-bold
+                text-lg
+                mb-2
+            ">
+
+                ${job.title||"Job"}
+
+            </h3>
+
+
+
+            <p class="
+                text-slate-500
+            ">
+
+                ${job.description||""}
+
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function tabs(){
+
+    return `
+
+        <div class="
+            grid
+            grid-cols-4
+            gap-2
+            mb-5
+        ">
+
+            <a href="jobs.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Tasks
+            </a>
+
+
+            <a href="freelance.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Freelance
+            </a>
+
+
+            <a href="hiring.html"
+            class="bg-blue-600 text-white rounded-xl p-3 text-center text-sm">
+            Hiring
+            </a>
+
+
+            <a href="influencer.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Influencer
+            </a>
+
+        </div>
+
+    ";
+
+}
+
+
+
+
+
+
+function navBar(){
+
+    return `
+
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            <a href="dashboard.html"
+            class="nav-btn text-2xl">🏠</a>
+
+
+            <a href="jobs.html"
+            class="nav-btn text-2xl">💼</a>
+
+
+            <a href="notifications.html"
+            class="nav-btn text-2xl">🔔</a>
+
+
+            <a href="profile.html"
+            class="nav-btn text-2xl">👤</a>
+
+        </div>
+
+    ";
+
+}
 
 </script>
 
 </body>
-</html>
+    </html>
