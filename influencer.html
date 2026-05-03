@@ -4,15 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Influencer Jobs</title>
+<title>Influencer</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-
-body{
-    font-family:sans-serif;
-}
 
 .nav-btn{
     transition:.25s;
@@ -20,24 +16,6 @@ body{
 
 .nav-btn:active{
     transform:scale(.85);
-}
-
-.fade{
-    animation:fade .35s;
-}
-
-@keyframes fade{
-
-    from{
-        opacity:0;
-        transform:translateY(10px);
-    }
-
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-
 }
 
 </style>
@@ -52,14 +30,15 @@ body{
 
 <div
     id="loader"
+
     class="
         fixed
         inset-0
-        bg-black/10
-        z-50
         flex
         items-center
         justify-center
+        bg-black/10
+        z-50
     "
 >
 
@@ -93,28 +72,6 @@ localStorage.getItem(
 );
 
 
-const user =
-JSON.parse(
-
-    localStorage.getItem(
-        "user"
-    ) || "{}"
-
-);
-
-
-const app =
-document.getElementById(
-    "app"
-);
-
-
-const loader =
-document.getElementById(
-    "loader"
-);
-
-
 if(!token){
 
     location =
@@ -129,30 +86,7 @@ load();
 
 
 
-function currency(){
-
-    if(
-        user.country==="NG"
-    ){
-
-        return "₦";
-
-    }
-
-
-    return "$";
-
-}
-
-
-
-
-
-
 async function load(){
-
-    let jobs = [];
-
 
     try{
 
@@ -176,54 +110,52 @@ async function load(){
 
 
 
-        const text =
-        await res.text();
+        const list =
+        await res.json();
 
 
 
-        try{
-
-            jobs =
-            JSON.parse(
-
-                text || "[]"
-
-            );
-
-        }catch{
-
-            jobs = [];
-
-        }
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
 
 
 
-        if(
-            !Array.isArray(
-                jobs
+        render(
+
+            Array.isArray(
+                list
             )
-        ){
 
-            jobs = [];
+            ?
 
-        }
+            list
+
+            :
+
+            []
+
+        );
+
+
 
     }catch{
 
-        jobs = [];
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render([]);
 
     }
-
-
-
-    loader.style.display =
-    "none";
-
-
-
-    render(
-        jobs
-    );
 
 }
 
@@ -233,10 +165,55 @@ async function load(){
 
 
 function render(
-    jobs
+    list
 ){
 
-    app.innerHTML = `
+    let content =
+    "";
+
+
+
+    if(
+        list.length===0
+    ){
+
+        content = `
+
+            <div class="
+                bg-white
+                rounded-[28px]
+                p-6
+                text-center
+                shadow
+            ">
+
+                No influencer jobs available
+
+            </div>
+
+        `;
+
+    }
+
+    else{
+
+        content =
+
+        list.map(
+
+            card
+
+        ).join("");
+
+    }
+
+
+
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
 
         <div class="
             p-4
@@ -248,30 +225,21 @@ function render(
                 font-bold
                 mb-5
             ">
+
                 Influencer Jobs
+
             </h1>
+
 
 
             ${tabs()}
 
 
-            ${
 
-                jobs.length
-
-                ?
-
-                jobs.map(
-                    card
-                ).join("")
-
-                :
-
-                empty()
-
-            }
+            ${content}
 
         </div>
+
 
 
         ${navBar()}
@@ -292,7 +260,6 @@ function card(
     return `
 
         <div class="
-            fade
             bg-white
             rounded-[28px]
             p-5
@@ -306,61 +273,23 @@ function card(
                 mb-2
             ">
 
-                ${job.title || "Influencer Job"}
+                ${job.title||"Job"}
 
             </h3>
 
 
+
             <p class="
                 text-slate-500
-                mb-4
             ">
 
-                ${job.description || ""}
+                ${job.description||""}
 
             </p>
 
-
-            <div class="
-                text-blue-600
-                font-bold
-            ">
-
-                ${currency()}
-                ${Number(
-                    job.reward || 0
-                ).toLocaleString()}
-
-            </div>
-
         </div>
 
-    ";
-
-}
-
-
-
-
-
-
-function empty(){
-
-    return `
-
-        <div class="
-            bg-white
-            rounded-[28px]
-            p-6
-            shadow
-            text-center
-        ">
-
-            No influencer jobs available
-
-        </div>
-
-    ";
+    `;
 
 }
 
@@ -380,13 +309,28 @@ function tabs(){
             mb-5
         ">
 
-            <a href="jobs.html" class="bg-white shadow rounded-xl p-3 text-center text-sm">Tasks</a>
+            <a href="jobs.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Tasks
+            </a>
 
-            <a href="freelance.html" class="bg-white shadow rounded-xl p-3 text-center text-sm">Freelance</a>
 
-            <a href="hiring.html" class="bg-white shadow rounded-xl p-3 text-center text-sm">Hiring</a>
+            <a href="freelance.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Freelance
+            </a>
 
-            <a href="influencer.html" class="bg-blue-600 text-white rounded-xl p-3 text-center text-sm">Influencer</a>
+
+            <a href="hiring.html"
+            class="bg-white shadow rounded-xl p-3 text-center text-sm">
+            Hiring
+            </a>
+
+
+            <a href="influencer.html"
+            class="bg-blue-600 text-white rounded-xl p-3 text-center text-sm">
+            Influencer
+            </a>
 
         </div>
 
@@ -416,13 +360,20 @@ function navBar(){
             text-center
         ">
 
-            <a href="dashboard.html" class="nav-btn text-2xl">🏠</a>
+            <a href="dashboard.html"
+            class="nav-btn text-2xl">🏠</a>
 
-            <a href="jobs.html" class="nav-btn text-2xl">💼</a>
 
-            <a href="notifications.html" class="nav-btn text-2xl">🔔</a>
+            <a href="jobs.html"
+            class="nav-btn text-2xl">💼</a>
 
-            <a href="profile.html" class="nav-btn text-2xl">👤</a>
+
+            <a href="notifications.html"
+            class="nav-btn text-2xl">🔔</a>
+
+
+            <a href="profile.html"
+            class="nav-btn text-2xl">👤</a>
 
         </div>
 
