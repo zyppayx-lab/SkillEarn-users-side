@@ -1,14 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jobs</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="bg-slate-100">
 
-<h1 style="font-size:40px">
-JOBS PAGE TEST ✅
-</h1>
+<div id="app"></div>
+
+<div id="loader"
+class="fixed inset-0 flex items-center justify-center bg-black/10">
+
+Loading...
+
+</div>
+
+
+<script>
+
+"use strict";
+
+alert("SCRIPT STARTED");
+
+
+const app =
+document.getElementById(
+    "app"
+);
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
+alert(
+    "Loader exists: " +
+    !!loader
+);
+
+
+loader.style.display =
+"none";
+
+
+app.innerHTML =
+"<h1 class='text-3xl p-5'>Jobs script works ✅</h1>";
+
+</script>
 
 </body>
 </html>
