@@ -1,868 +1,112 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Jobs</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-
-.nav-btn{
-    transition:.25s;
-}
-
-.nav-btn:active{
-    transform:scale(.85);
-}
-
-.modal{
-    animation:pop .25s;
-}
-
-@keyframes pop{
-
-    from{
-        transform:scale(.8);
-        opacity:0;
-    }
-
-    to{
-        transform:scale(1);
-        opacity:1;
-    }
-
-}
-
-</style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillEarn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-slate-50 text-slate-800">
+  <div id="app" class="min-h-screen pb-20"><!-- Top Bar -->
+<header class="bg-blue-600 text-white px-4 py-4 shadow-md sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold">SkillEarn</h1>
+    <button onclick="logout()" class="text-sm">Logout</button>
+  </div>
+</header>
 
-<body class="bg-slate-100">
+<!-- Main Content -->
+<main id="screen" class="max-w-6xl mx-auto p-4"></main>
 
-<div id="app"></div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3">
+  <button onclick="loadDashboard()">Dashboard</button>
+  <button onclick="loadTasks()">Jobs</button>
+  <button onclick="loadNotifications()">Notifications</button>
+  <button onclick="loadProfile()">Profile</button>
+</nav>
 
-<div
-    id="loader"
-    class="
-        fixed
-        inset-0
-        flex
-        items-center
-        justify-center
-        bg-black/10
-        z-50
-    "
->
-
-    <div class="
-        w-16
-        h-16
-        rounded-full
-        border-[5px]
-        border-blue-100
-        border-t-blue-600
-        animate-spin
-        bg-white
-    "></div>
-
-</div>
-
-<div id="modal"></div>
-
-
-<script>
-
+  </div><script>
 "use strict";
 
+const APP = document.getElementById("app");
+const LOADER = document.getElementById("loader");
+const MODAL = document.getElementById("modal");
 
-const app =
-document.getElementById(
-    "app"
-);
-
-const loader =
-document.getElementById(
-    "loader"
-);
-
-const modal =
-document.getElementById(
-    "modal"
-);
-
-
-const API =
-"https://skillearn.onrender.com";
-
-
-const token =
-localStorage.getItem(
-    "token"
-);
-
-
-const user =
-JSON.parse(
-
-    localStorage.getItem(
-        "user"
-    ) || "{}"
-
-);
-
+const API = "https://skillearn.onrender.com";
+const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
 
 if(!token){
-
-    window.location.href =
-    "login.html";
-
+  location = "login.html";
 }
-
-
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    load
-
-);
-
-
 
 function authHeaders(){
-
-    return {
-
-        Authorization:
-        `Bearer ${token}`
-
-    };
-
+  return {
+    Authorization: "Bearer " + token
+  };
 }
 
+async function fetchJobs(endpoint){
+  try{
+    const res = await fetch(API + endpoint, {
+      headers: authHeaders()
+    });
 
+    if(!res.ok) return [];
 
-async function safeFetch(
-    url
-){
+    const data = await res.json();
 
-    const controller =
-    new AbortController();
+    return Array.isArray(data) ? data : [];
 
-
-    const timeout =
-    setTimeout(
-
-        ()=>controller.abort(),
-
-        10000
-
-    );
-
-
-    try{
-
-        const res =
-        await fetch(
-
-            url,
-
-            {
-
-                headers:
-                authHeaders(),
-
-                signal:
-                controller.signal
-
-            }
-
-        );
-
-
-        clearTimeout(
-            timeout
-        );
-
-
-        if(
-            !res.ok
-        ){
-
-            return [];
-
-        }
-
-
-        const data =
-        await res.json();
-
-
-        if(
-            !Array.isArray(
-                data
-            )
-        ){
-
-            return [];
-
-        }
-
-
-        return data;
-
-    }catch{
-
-        clearTimeout(
-            timeout
-        );
-
-        return [];
-
-    }
-
+  }catch{
+    return [];
+  }
 }
-
-
 
 async function load(){
 
-    loader.style.display =
-    "flex";
+  LOADER.style.display = "flex";
 
+  const results = await Promise.allSettled([
+    fetchJobs("/api/users/tasks"),
+    fetchJobs("/api/users/freelance-jobs"),
+    fetchJobs("/api/users/hiring-jobs"),
+    fetchJobs("/api/users/influencer-jobs")
+  ]);
 
-    try{
+  const tasks = results[0].status === "fulfilled" ? results[0].value : [];
+  const freelance = results[1].status === "fulfilled" ? results[1].value : [];
+  const hiring = results[2].status === "fulfilled" ? results[2].value : [];
+  const influencer = results[3].status === "fulfilled" ? results[3].value : [];
 
-        const [
+  const jobs = [
+    ...tasks.map(x => ({...x, type:"TASK"})),
+    ...freelance.map(x => ({...x, type:"FREELANCE"})),
+    ...hiring.map(x => ({...x, type:"HIRING"})),
+    ...influencer.map(x => ({...x, type:"INFLUENCER"}))
+  ];
 
-            tasks,
+  LOADER.style.display = "none";
 
-            freelance,
-
-            hiring,
-
-            influencer
-
-        ] = await Promise.all([
-
-            safeFetch(
-                API +
-                "/api/users/tasks"
-            ),
-
-            safeFetch(
-                API +
-                "/api/users/freelance-jobs"
-            ),
-
-            safeFetch(
-                API +
-                "/api/users/hiring-jobs"
-            ),
-
-            safeFetch(
-                API +
-                "/api/users/influencer-jobs"
-            )
-
-        ]);
-
-
-        const jobs = [
-
-            ...tasks.map(
-                x=>({
-                    ...x,
-                    type:"TASK"
-                })
-            ),
-
-            ...freelance.map(
-                x=>({
-                    ...x,
-                    type:"FREELANCE"
-                })
-            ),
-
-            ...hiring.map(
-                x=>({
-                    ...x,
-                    type:"HIRING"
-                })
-            ),
-
-            ...influencer.map(
-                x=>({
-                    ...x,
-                    type:"INFLUENCER"
-                })
-            )
-
-        ];
-
-
-        render(
-            jobs
-        );
-
-    }catch{
-
-        render(
-            []
-        );
-
-    }finally{
-
-        loader.style.display =
-        "none";
-
-    }
-
+  render(jobs);
 }
-
-
 
 function currency(){
-
-    return user.country === "NG"
-        ? "₦"
-        : "$";
-
+  return user.country === "NG" ? "₦" : "$";
 }
 
-
-
-function render(
-    jobs
-){
-
-    app.innerHTML = `
-
-        <div class="
-            p-4
-            pb-28
-        ">
-
-            <h1 class="
-                text-2xl
-                font-bold
-                mb-5
-            ">
-                Available Jobs
-            </h1>
-
-            ${
-
-                jobs.length
-
-                ?
-
-                jobs.map(
-                    card
-                ).join("")
-
-                :
-
-                empty()
-
-            }
-
-        </div>
-
-
-        <div class="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            bg-white
-            border-t
-            grid
-            grid-cols-4
-            p-3
-            text-center
-        ">
-
-            ${nav("🏠","dashboard.html")}
-            ${nav("💼","jobs.html")}
-            ${nav("🔔","notifications.html")}
-            ${nav("👤","profile.html")}
-
-        </div>
-
-    `;
-
+function render(jobs){
+  APP.innerHTML = `<div class="p-4 pb-28"><h1 class="text-2xl font-bold mb-5">Available Jobs</h1>${jobs.length ? jobs.map(card).join("") : empty()}</div>`;
 }
 
-
-
-function card(
-    job
-){
-
-    return `
-
-        <div
-
-            id="job-${job.id}"
-
-            class="
-                bg-white
-                rounded-[28px]
-                p-5
-                shadow
-                mb-4
-            "
-        >
-
-
-            <div class="
-                flex
-                justify-between
-                mb-3
-            ">
-
-
-                <h3 class="
-                    font-bold
-                    text-lg
-                ">
-
-                    ${job.title || "Untitled"}
-
-                </h3>
-
-
-                <span class="
-                    text-xs
-                    bg-blue-100
-                    text-blue-700
-                    px-3
-                    py-1
-                    rounded-full
-                ">
-
-                    ${job.type}
-
-                </span>
-
-
-            </div>
-
-
-            <p class="
-                text-slate-600
-                mb-4
-            ">
-
-                ${job.description || ""}
-
-            </p>
-
-
-            <div class="
-                text-blue-600
-                font-bold
-                mb-4
-            ">
-
-                ${currency()}
-                ${Number(
-                    job.reward || 0
-                ).toLocaleString()}
-
-            </div>
-
-
-            <button
-
-                data-id="${job.id}"
-                data-type="${job.type}"
-
-                class="
-                    apply-btn
-                    w-full
-                    bg-blue-600
-                    text-white
-                    py-3
-                    rounded-2xl
-                    font-bold
-                "
-            >
-
-                Apply
-
-            </button>
-
-
-        </div>
-
-    ";
-
+function card(job){
+  return `<div id="job-${job.id}" class="bg-white rounded-[28px] p-5 shadow mb-4"><div class="flex justify-between mb-3"><h3 class="font-bold text-lg">${job.title || "Untitled"}</h3><span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">${job.type}</span></div><p class="text-slate-600 mb-4">${job.description || ""}</p><div class="text-blue-600 font-bold mb-4">${currency()}${Number(job.reward || 0).toLocaleString()}</div></div>`;
 }
-
-
-
-document.addEventListener(
-
-    "click",
-
-    e=>{
-
-        if(
-
-            e.target.classList.contains(
-                "apply-btn"
-            )
-
-        ){
-
-            applyJob(
-
-                e.target.dataset.id,
-
-                e.target.dataset.type
-
-            );
-
-        }
-
-    }
-
-);
-
-
-
-async function applyJob(
-    jobId,
-    type
-){
-
-    let endpoint =
-    "";
-
-    let payload =
-    {};
-
-
-    if(
-        type==="TASK"
-    ){
-
-        const proof =
-        prompt(
-            "Proof"
-        );
-
-
-        if(!proof){
-            return;
-        }
-
-
-        endpoint =
-        "/api/users/submit-task";
-
-
-        payload = {
-
-            task_id:
-            jobId,
-
-            proof
-
-        };
-
-    }
-
-
-    if(
-        type==="FREELANCE"
-    ){
-
-        const proposal =
-        prompt(
-            "Proposal"
-        );
-
-
-        if(!proposal){
-            return;
-        }
-
-
-        endpoint =
-        "/api/users/apply-freelance";
-
-
-        payload = {
-
-            job_id:
-            jobId,
-
-            proposal
-
-        };
-
-    }
-
-
-    if(
-        type==="HIRING"
-    ){
-
-        const cv =
-        prompt(
-            "CV Link"
-        );
-
-
-        if(!cv){
-            return;
-        }
-
-
-        endpoint =
-        "/api/users/apply-hiring";
-
-
-        payload = {
-
-            job_id:
-            jobId,
-
-            cv_link:
-            cv
-
-        };
-
-    }
-
-
-    if(
-        type==="INFLUENCER"
-    ){
-
-        const portfolio =
-        prompt(
-            "Portfolio Link"
-        );
-
-
-        if(!portfolio){
-            return;
-        }
-
-
-        endpoint =
-        "/api/users/apply-influencer";
-
-
-        payload = {
-
-            job_id:
-            jobId,
-
-            portfolio_link:
-            portfolio
-
-        };
-
-    }
-
-
-    try{
-
-        const res =
-        await fetch(
-
-            API +
-            endpoint,
-
-            {
-
-                method:"POST",
-
-                headers:{
-
-                    ...authHeaders(),
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-                body:
-                JSON.stringify(
-                    payload
-                )
-
-            }
-
-        );
-
-
-        if(
-            !res.ok
-        ){
-
-            popup(
-                "Could not apply"
-            );
-
-            return;
-
-        }
-
-
-        const card =
-        document.getElementById(
-
-            "job-" +
-            jobId
-
-        );
-
-
-        if(
-            card
-        ){
-
-            card.remove();
-
-        }
-
-
-        popup(
-            "Application successful"
-        );
-
-    }catch{
-
-        popup(
-            "Connection failed"
-        );
-
-    }
-
-}
-
-
-
-function popup(
-    message
-){
-
-    modal.innerHTML = `
-
-        <div class="
-            fixed
-            inset-0
-            bg-black/20
-            flex
-            items-center
-            justify-center
-            z-50
-        ">
-
-            <div class="
-                modal
-                bg-white
-                rounded-[28px]
-                p-6
-                text-center
-                w-[90%]
-                max-w-sm
-            ">
-
-                <div class="
-                    text-5xl
-                    mb-4
-                ">
-                    ✅
-                </div>
-
-                <p class="
-                    font-bold
-                ">
-                    ${message}
-                </p>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    setTimeout(
-
-        ()=>{
-
-            modal.innerHTML =
-            "";
-
-        },
-
-        2000
-
-    );
-
-}
-
-
 
 function empty(){
-
-    return `
-
-        <div class="
-            bg-white
-            rounded-[28px]
-            p-6
-            text-center
-        ">
-
-            No jobs available
-
-        </div>
-
-    ";
-
+  return `<div class="bg-white rounded-[28px] p-6 text-center">No jobs available</div>`;
 }
 
-
-
-function nav(
-    icon,
-    page
-){
-
-    return `
-
-        <a
-
-            href="${page}"
-
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-
-            ${icon}
-
-        </a>
-
-    ";
-
-}
-
-</script>
-
-</body>
-    </html>
+load();
+</script></body>
+</html>
