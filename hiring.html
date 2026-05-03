@@ -10,6 +10,10 @@
 
 <style>
 
+body{
+    font-family:sans-serif;
+}
+
 .nav-btn{
     transition:.25s;
 }
@@ -26,7 +30,7 @@
 
     from{
         opacity:0;
-        transform:translateY(12px);
+        transform:translateY(10px);
     }
 
     to{
@@ -40,6 +44,7 @@
 
 </head>
 
+
 <body class="bg-slate-100">
 
 <div id="app"></div>
@@ -47,14 +52,15 @@
 
 <div
     id="loader"
+
     class="
         fixed
         inset-0
+        bg-black/10
+        z-50
         flex
         items-center
         justify-center
-        bg-black/10
-        z-50
     "
 >
 
@@ -70,6 +76,7 @@
     "></div>
 
 </div>
+
 
 
 <script>
@@ -97,12 +104,25 @@ JSON.parse(
 );
 
 
+const app =
+document.getElementById(
+    "app"
+);
+
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+
 if(!token){
 
     location =
     "login.html";
 
 }
+
 
 
 load();
@@ -120,9 +140,12 @@ function currency(){
 
     }
 
+
     return "$";
 
 }
+
+
 
 
 
@@ -150,40 +173,66 @@ async function load(){
         );
 
 
-        const jobs =
+
+        let data =
         await res.json();
 
 
-        document
-        .getElementById(
-            "loader"
-        )
-        .style.display =
+
+        if(
+            Array.isArray(
+                data
+            )
+        ){}
+
+        else if(
+            Array.isArray(
+                data.jobs
+            )
+        ){
+
+            data =
+            data.jobs;
+
+        }
+
+        else if(
+            Array.isArray(
+                data.data
+            )
+        ){
+
+            data =
+            data.data;
+
+        }
+
+        else{
+
+            data = [];
+
+        }
+
+
+
+        loader.style.display =
         "none";
 
 
+
         render(
-
-            Array.isArray(
-                jobs
-            )
-
-            ?
-
-            jobs
-
-            :
-
-            []
-
+            data
         );
 
 
 
     }catch(error){
 
-        location =
-        "login.html";
+        loader.style.display =
+        "none";
+
+
+        render([]);
 
     }
 
@@ -192,15 +241,13 @@ async function load(){
 
 
 
+
+
 function render(
     jobs
 ){
 
-    document
-    .getElementById(
-        "app"
-    )
-    .innerHTML = `
+    app.innerHTML = `
 
         <div class="
             p-4
@@ -213,37 +260,17 @@ function render(
                 font-bold
                 mb-5
             ">
+
                 Hiring Jobs
+
             </h1>
 
 
-            <div class="
-                flex
-                gap-2
-                overflow-x-auto
-                mb-5
-            ">
 
-                ${tab(
-                    "Tasks",
-                    "jobs.html"
-                )}
 
-                ${tab(
-                    "Freelance",
-                    "freelance.html"
-                )}
+            ${tabs()}
 
-                ${activeTab(
-                    "Hiring"
-                )}
 
-                ${tab(
-                    "Influencer",
-                    "influencer.html"
-                )}
-
-            </div>
 
 
             ${
@@ -267,44 +294,14 @@ function render(
 
 
 
-        <div class="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            bg-white
-            border-t
-            grid
-            grid-cols-4
-            p-3
-            text-center
-        ">
 
-            ${nav(
-                "🏠",
-                "dashboard.html"
-            )}
-
-            ${nav(
-                "💼",
-                "jobs.html"
-            )}
-
-            ${nav(
-                "🔔",
-                "notifications.html"
-            )}
-
-            ${nav(
-                "👤",
-                "profile.html"
-            )}
-
-        </div>
+        ${navBar()}
 
     `;
 
 }
+
+
 
 
 
@@ -328,12 +325,13 @@ function card(
             <h3 class="
                 font-bold
                 text-lg
-                mb-3
+                mb-2
             ">
 
-                ${job.title}
+                ${job.title || "Hiring Job"}
 
             </h3>
+
 
 
             <p class="
@@ -341,9 +339,10 @@ function card(
                 mb-4
             ">
 
-                ${job.description||""}
+                ${job.description || ""}
 
             </p>
+
 
 
             <div class="
@@ -354,16 +353,11 @@ function card(
 
                 ${currency()}
                 ${Number(
-
-                    job.salary ||
-
-                    job.reward ||
-
-                    0
-
+                    job.reward || 0
                 ).toLocaleString()}
 
             </div>
+
 
 
             <button
@@ -380,7 +374,6 @@ function card(
                     text-white
                     py-3
                     rounded-2xl
-                    font-bold
                 "
             >
 
@@ -398,75 +391,18 @@ function card(
 
 
 
-async function apply(
+
+
+function apply(
     id
 ){
 
-    const cv = prompt(
-        "Enter CV link"
-    );
-
-
-    if(!cv){
-
-        return;
-
-    }
-
-
-    try{
-
-        await fetch(
-
-            API+
-            "/api/users/apply-hiring",
-
-            {
-
-                method:"POST",
-
-                headers:{
-
-                    Authorization:
-                    "Bearer "+
-                    token,
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-                body:
-                JSON.stringify({
-
-                    job_id:id,
-
-                    cv_link:cv
-
-                })
-
-            }
-
-        );
-
-
-        alert(
-            "Application submitted"
-        );
-
-
-        load();
-
-
-    }catch{
-
-        alert(
-            "Failed"
-        );
-
-    }
+    location =
+    "hiring-submit.html?id="+id;
 
 }
+
+
 
 
 
@@ -486,6 +422,87 @@ function empty(){
 
         </div>
 
+    ";
+
+}
+
+
+
+
+
+
+function tabs(){
+
+    return `
+
+        <div class="
+            grid
+            grid-cols-4
+            gap-2
+            mb-5
+        ">
+
+            <a
+                href="jobs.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Tasks
+            </a>
+
+
+            <a
+                href="freelance.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Freelance
+            </a>
+
+
+            <a
+                href="hiring.html"
+                class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Hiring
+            </a>
+
+
+            <a
+                href="influencer.html"
+                class="
+                    bg-white
+                    shadow
+                    rounded-xl
+                    p-3
+                    text-center
+                    text-sm
+                "
+            >
+                Influencer
+            </a>
+
+        </div>
+
     `;
 
 }
@@ -493,90 +510,63 @@ function empty(){
 
 
 
-function tab(
-    name,
-    page
-){
-
-    return `
-
-        <a
-
-            href="${page}"
-
-            class="
-                bg-white
-                px-4
-                py-2
-                rounded-full
-                shadow
-                whitespace-nowrap
-            "
-        >
-
-            ${name}
-
-        </a>
-
-    ";
-
-}
 
 
-
-
-function activeTab(
-    name
-){
+function navBar(){
 
     return `
 
         <div class="
-            bg-blue-600
-            text-white
-            px-4
-            py-2
-            rounded-full
-            whitespace-nowrap
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
         ">
 
-            ${name}
+            <a
+                href="dashboard.html"
+                class="nav-btn text-2xl"
+            >
+                🏠
+            </a>
+
+
+            <a
+                href="jobs.html"
+                class="nav-btn text-2xl"
+            >
+                💼
+            </a>
+
+
+            <a
+                href="notifications.html"
+                class="nav-btn text-2xl"
+            >
+                🔔
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="nav-btn text-2xl"
+            >
+                👤
+            </a>
 
         </div>
 
-    ";
-
-}
-
-
-
-
-function nav(
-    icon,
-    page
-){
-
-    return `
-
-        <a
-
-            href="${page}"
-
-            class="
-                nav-btn
-                text-2xl
-            "
-        >
-
-            ${icon}
-
-        </a>
-
-    ";
+    `;
 
 }
 
 </script>
 
 </body>
-</html>
+    </html>
