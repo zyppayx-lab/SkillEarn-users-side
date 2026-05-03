@@ -123,7 +123,17 @@ if(!token){
 
 
 
-load();
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    ()=>{
+
+        load();
+
+    }
+
+);
 
 
 
@@ -205,70 +215,81 @@ async function load(){
     "flex";
 
 
-    const tasks =
-    await fetchJobs(
-        "/api/users/tasks"
-    );
+    try{
+
+        const tasks =
+        await fetchJobs(
+            "/api/users/tasks"
+        );
 
 
-    const freelance =
-    await fetchJobs(
-        "/api/users/freelance-jobs"
-    );
+        const freelance =
+        await fetchJobs(
+            "/api/users/freelance-jobs"
+        );
 
 
-    const hiring =
-    await fetchJobs(
-        "/api/users/hiring-jobs"
-    );
+        const hiring =
+        await fetchJobs(
+            "/api/users/hiring-jobs"
+        );
 
 
-    const influencer =
-    await fetchJobs(
-        "/api/users/influencer-jobs"
-    );
+        const influencer =
+        await fetchJobs(
+            "/api/users/influencer-jobs"
+        );
 
 
-    const jobs = [
+        const jobs = [
 
-        ...tasks.map(
-            x=>({
-                ...x,
-                type:"TASK"
-            })
-        ),
+            ...tasks.map(
+                x=>({
+                    ...x,
+                    type:"TASK"
+                })
+            ),
 
-        ...freelance.map(
-            x=>({
-                ...x,
-                type:"FREELANCE"
-            })
-        ),
+            ...freelance.map(
+                x=>({
+                    ...x,
+                    type:"FREELANCE"
+                })
+            ),
 
-        ...hiring.map(
-            x=>({
-                ...x,
-                type:"HIRING"
-            })
-        ),
+            ...hiring.map(
+                x=>({
+                    ...x,
+                    type:"HIRING"
+                })
+            ),
 
-        ...influencer.map(
-            x=>({
-                ...x,
-                type:"INFLUENCER"
-            })
-        )
+            ...influencer.map(
+                x=>({
+                    ...x,
+                    type:"INFLUENCER"
+                })
+            )
 
-    ];
-
-
-    loader.style.display =
-    "none";
+        ];
 
 
-    render(
-        jobs
-    );
+        render(
+            jobs
+        );
+
+    }catch{
+
+        render(
+            []
+        );
+
+    }finally{
+
+        loader.style.display =
+        "none";
+
+    }
 
 }
 
@@ -276,16 +297,9 @@ async function load(){
 
 function currency(){
 
-    if(
-        user.country==="NG"
-    ){
-
-        return "₦";
-
-    }
-
-
-    return "$";
+    return user.country === "NG"
+        ? "₦"
+        : "$";
 
 }
 
@@ -647,7 +661,7 @@ async function applyJob(
         }
 
 
-        const jobCard =
+        const card =
         document.getElementById(
 
             "job-" +
@@ -657,10 +671,10 @@ async function applyJob(
 
 
         if(
-            jobCard
+            card
         ){
 
-            jobCard.remove();
+            card.remove();
 
         }
 
@@ -668,7 +682,6 @@ async function applyJob(
         popup(
             "Application successful"
         );
-
 
     }catch{
 
@@ -698,7 +711,6 @@ function popup(
             z-50
         ">
 
-
             <div class="
                 modal
                 bg-white
@@ -709,7 +721,6 @@ function popup(
                 max-w-sm
             ">
 
-
                 <div class="
                     text-5xl
                     mb-4
@@ -717,13 +728,11 @@ function popup(
                     ✅
                 </div>
 
-
                 <p class="
                     font-bold
                 ">
                     ${message}
                 </p>
-
 
             </div>
 
