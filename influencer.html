@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Influencer Jobs</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+    font-family:sans-serif;
+}
+
+.nav-btn{
+    transition:.25s;
+}
+
+.nav-btn:active{
+    transform:scale(.85);
+}
+
+.fade{
+    animation:fade .35s;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+<div id="app"></div>
+
+
+<div
+    id="loader"
+    class="
+        fixed
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/10
+        z-50
+    "
+>
+
+    <div class="
+        w-16
+        h-16
+        rounded-full
+        border-[5px]
+        border-blue-100
+        border-t-blue-600
+        animate-spin
+        bg-white
+    "></div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+
+const API =
+"https://skillearn.onrender.com";
+
+
+const token =
+localStorage.getItem(
+    "token"
+);
+
+
+const user =
+JSON.parse(
+
+    localStorage.getItem(
+        "user"
+    ) || "{}"
+
+);
+
+
+if(!token){
+
+    location =
+    "login.html";
+
+}
+
+
+
+load();
+
+
+
+
+function currency(){
+
+    if(
+        user.country==="NG"
+    ){
+
+        return "₦";
+
+    }
+
+    return "$";
+
+}
+
+
+
+
+
+
+async function load(){
+
+    try{
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/influencer-jobs",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
+            }
+
+        );
+
+
+
+        const jobs =
+        await res.json();
+
+
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render(
+
+            Array.isArray(
+                jobs
+            )
+
+            ?
+
+            jobs
+
+            :
+
+            []
+
+        );
+
+
+
+    }catch(error){
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render([]);
+
+    }
+
+}
+
+
+
+
+
+
+function render(
+    jobs
+){
+
+    document
+    .getElementById(
+        "app"
+    )
+    .innerHTML = `
+
+        <div class="
+            p-4
+            pb-28
+        ">
+
+
+
+
+            <!-- CATEGORIES -->
+            <div class="
+                flex
+                gap-2
+                overflow-x-auto
+                mb-5
+            ">
+
+                ${tab(
+                    "Tasks",
+                    "jobs.html"
+                )}
+
+                ${tab(
+                    "Freelance",
+                    "freelance.html"
+                )}
+
+                ${tab(
+                    "Hiring",
+                    "hiring.html"
+                )}
+
+                ${activeTab(
+                    "Influencer"
+                )}
+
+            </div>
+
+
+
+
+            <h1 class="
+                text-2xl
+                font-bold
+                mb-5
+            ">
+                Influencer Jobs
+            </h1>
+
+
+
+            ${
+
+                jobs.length
+
+                ?
+
+                jobs.map(
+                    card
+                ).join("")
+
+                :
+
+                empty()
+
+            }
+
+
+
+        </div>
+
+
+
+
+        <!-- NAV -->
+        <div class="
+            fixed
+            bottom-0
+            left-0
+            right-0
+            bg-white
+            border-t
+            grid
+            grid-cols-4
+            p-3
+            text-center
+        ">
+
+            ${nav(
+                "🏠",
+                "dashboard.html"
+            )}
+
+            ${nav(
+                "💼",
+                "jobs.html"
+            )}
+
+            ${nav(
+                "🔔",
+                "notifications.html"
+            )}
+
+            ${nav(
+                "👤",
+                "profile.html"
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function card(
+    job
+){
+
+    return `
+
+        <div
+            id="job-${job.id}"
+
+            class="
+                fade
+                bg-white
+                rounded-[28px]
+                p-5
+                shadow
+                mb-4
+            "
+        >
+
+
+            <h3 class="
+                font-bold
+                text-lg
+                mb-2
+            ">
+
+                ${job.title || "Campaign"}
+
+            </h3>
+
+
+
+            <p class="
+                text-slate-600
+                mb-4
+            ">
+
+                ${job.description || ""}
+
+            </p>
+
+
+
+            <div class="
+                text-blue-600
+                font-bold
+                mb-4
+            ">
+
+                ${currency()}
+                ${Number(
+                    job.reward || 0
+                ).toLocaleString()}
+
+            </div>
+
+
+
+            <button
+
+                onclick="
+                    applyJob(
+                        ${job.id}
+                    )
+                "
+
+                class="
+                    w-full
+                    bg-blue-600
+                    text-white
+                    py-3
+                    rounded-2xl
+                    font-bold
+                "
+            >
+
+                Apply
+
+            </button>
+
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+async function applyJob(
+    jobId
+){
+
+    const portfolio =
+    prompt(
+        "Enter portfolio link"
+    );
+
+
+    if(
+        !portfolio
+    ){
+
+        return;
+
+    }
+
+
+
+    try{
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/apply-influencer",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    Authorization:
+                    "Bearer "+
+                    token,
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body:
+                JSON.stringify({
+
+                    job_id:
+                    jobId,
+
+                    portfolio_link:
+                    portfolio
+
+                })
+
+            }
+
+        );
+
+
+
+        if(
+            !res.ok
+        ){
+
+            alert(
+                "Application failed"
+            );
+
+            return;
+
+        }
+
+
+
+        document
+        .getElementById(
+
+            "job-"+jobId
+
+        )
+        .remove();
+
+
+
+        alert(
+            "Applied successfully"
+        );
+
+
+
+    }catch(error){
+
+        alert(
+            "Connection failed"
+        );
+
+    }
+
+}
+
+
+
+
+
+
+function empty(){
+
+    return `
+
+        <div class="
+            bg-white
+            rounded-[28px]
+            p-6
+            text-center
+        ">
+
+            No influencer jobs available
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function tab(
+    name,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                whitespace-nowrap
+                bg-white
+                px-4
+                py-2
+                rounded-full
+                shadow
+            "
+        >
+
+            ${name}
+
+        </a>
+
+    `;
+
+}
+
+
+
+
+
+
+function activeTab(
+    name
+){
+
+    return `
+
+        <div class="
+            whitespace-nowrap
+            bg-blue-600
+            text-white
+            px-4
+            py-2
+            rounded-full
+        ">
+
+            ${name}
+
+        </div>
+
+    `;
+
+}
+
+
+
+
+
+
+function nav(
+    icon,
+    page
+){
+
+    return `
+
+        <a
+
+            href="${page}"
+
+            class="
+                nav-btn
+                text-2xl
+            "
+        >
+
+            ${icon}
+
+        </a>
+
+    `;
+
+}
+
+</script>
+
+</body>
+</html>
