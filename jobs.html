@@ -23,8 +23,13 @@ Loading...
 
 "use strict";
 
-alert("SCRIPT STARTED");
+const API =
+"https://skillearn.onrender.com";
 
+const token =
+localStorage.getItem(
+    "token"
+);
 
 const app =
 document.getElementById(
@@ -37,20 +42,70 @@ document.getElementById(
 );
 
 
-alert(
-    "Loader exists: " +
-    !!loader
-);
+test();
 
 
-loader.style.display =
-"none";
+async function test(){
+
+    try{
+
+        app.innerHTML =
+        "<h1 class='p-5'>Fetching...</h1>";
 
 
-app.innerHTML =
-"<h1 class='text-3xl p-5'>Jobs script works ✅</h1>";
+        const res =
+        await fetch(
 
-</script>
+            API+
+            "/api/users/tasks",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
+            }
+
+        );
+
+
+        loader.style.display =
+        "none";
+
+
+        app.innerHTML =
+
+        "<div class='p-5 text-xl'>" +
+
+        "Status: " +
+
+        res.status +
+
+        "</div>";
+
+
+    }catch(error){
+
+        loader.style.display =
+        "none";
+
+
+        app.innerHTML =
+
+        "<div class='p-5 text-red-600'>" +
+
+        error.message +
+
+        "</div>";
+
+    }
+
+}
+
+            </script>
 
 </body>
 </html>
