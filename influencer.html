@@ -152,6 +152,9 @@ function currency(){
 
 async function load(){
 
+    let jobs = [];
+
+
     try{
 
         const res =
@@ -174,67 +177,37 @@ async function load(){
 
 
 
-        let data =
+        jobs =
         await res.json();
 
 
 
         if(
-            Array.isArray(
-                data
-            )
-        ){}
-
-        else if(
-            Array.isArray(
-                data.jobs
+            !Array.isArray(
+                jobs
             )
         ){
 
-            data =
-            data.jobs;
+            jobs = [];
 
         }
-
-        else if(
-            Array.isArray(
-                data.data
-            )
-        ){
-
-            data =
-            data.data;
-
-        }
-
-        else{
-
-            data = [];
-
-        }
-
-
-
-        loader.style.display =
-        "none";
-
-
-
-        render(
-            data
-        );
-
-
 
     }catch(error){
 
-        loader.style.display =
-        "none";
-
-
-        render([]);
+        jobs = [];
 
     }
+
+
+
+    loader.style.display =
+    "none";
+
+
+
+    render(
+        jobs
+    );
 
 }
 
@@ -415,6 +388,7 @@ function empty(){
             bg-white
             rounded-[28px]
             p-6
+            shadow
             text-center
         ">
 
