@@ -116,7 +116,7 @@ JSON.parse(
 
 if(!token){
 
-    location =
+    window.location.href =
     "login.html";
 
 }
@@ -127,11 +127,7 @@ document.addEventListener(
 
     "DOMContentLoaded",
 
-    ()=>{
-
-        load();
-
-    }
+    load
 
 );
 
@@ -142,8 +138,7 @@ function authHeaders(){
     return {
 
         Authorization:
-        "Bearer " +
-        token
+        `Bearer ${token}`
 
     };
 
@@ -151,25 +146,46 @@ function authHeaders(){
 
 
 
-async function fetchJobs(
-    endpoint
+async function safeFetch(
+    url
 ){
+
+    const controller =
+    new AbortController();
+
+
+    const timeout =
+    setTimeout(
+
+        ()=>controller.abort(),
+
+        10000
+
+    );
+
 
     try{
 
         const res =
         await fetch(
 
-            API +
-            endpoint,
+            url,
 
             {
 
                 headers:
-                authHeaders()
+                authHeaders(),
+
+                signal:
+                controller.signal
 
             }
 
+        );
+
+
+        clearTimeout(
+            timeout
         );
 
 
@@ -201,6 +217,10 @@ async function fetchJobs(
 
     }catch{
 
+        clearTimeout(
+            timeout
+        );
+
         return [];
 
     }
@@ -217,28 +237,39 @@ async function load(){
 
     try{
 
-        const tasks =
-        await fetchJobs(
-            "/api/users/tasks"
-        );
+        const [
 
+            tasks,
 
-        const freelance =
-        await fetchJobs(
-            "/api/users/freelance-jobs"
-        );
+            freelance,
 
+            hiring,
 
-        const hiring =
-        await fetchJobs(
-            "/api/users/hiring-jobs"
-        );
+            influencer
 
+        ] = await Promise.all([
 
-        const influencer =
-        await fetchJobs(
-            "/api/users/influencer-jobs"
-        );
+            safeFetch(
+                API +
+                "/api/users/tasks"
+            ),
+
+            safeFetch(
+                API +
+                "/api/users/freelance-jobs"
+            ),
+
+            safeFetch(
+                API +
+                "/api/users/hiring-jobs"
+            ),
+
+            safeFetch(
+                API +
+                "/api/users/influencer-jobs"
+            )
+
+        ]);
 
 
         const jobs = [
@@ -449,14 +480,11 @@ function card(
 
             <button
 
-                onclick="
-                    applyJob(
-                        ${job.id},
-                        '${job.type}'
-                    )
-                "
+                data-id="${job.id}"
+                data-type="${job.type}"
 
                 class="
+                    apply-btn
                     w-full
                     bg-blue-600
                     text-white
@@ -476,6 +504,36 @@ function card(
     ";
 
 }
+
+
+
+document.addEventListener(
+
+    "click",
+
+    e=>{
+
+        if(
+
+            e.target.classList.contains(
+                "apply-btn"
+            )
+
+        ){
+
+            applyJob(
+
+                e.target.dataset.id,
+
+                e.target.dataset.type
+
+            );
+
+        }
+
+    }
+
+);
 
 
 
