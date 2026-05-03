@@ -40,15 +40,12 @@
 
 </head>
 
-
 <body class="bg-slate-100">
 
 <div id="app"></div>
 
-
 <div
     id="loader"
-
     class="
         fixed
         inset-0
@@ -73,13 +70,28 @@
 
 </div>
 
-
 <div id="modal"></div>
 
 
 <script>
 
 "use strict";
+
+
+const app =
+document.getElementById(
+    "app"
+);
+
+const loader =
+document.getElementById(
+    "loader"
+);
+
+const modal =
+document.getElementById(
+    "modal"
+);
 
 
 const API =
@@ -290,7 +302,6 @@ function render(
             pb-28
         ">
 
-
             <h1 class="
                 text-2xl
                 font-bold
@@ -298,7 +309,6 @@ function render(
             ">
                 Available Jobs
             </h1>
-
 
             ${
 
@@ -315,7 +325,6 @@ function render(
                 empty()
 
             }
-
 
         </div>
 
@@ -499,7 +508,6 @@ async function applyJob(
     }
 
 
-
     if(
         type==="FREELANCE"
     ){
@@ -529,7 +537,6 @@ async function applyJob(
         };
 
     }
-
 
 
     if(
@@ -564,7 +571,6 @@ async function applyJob(
     }
 
 
-
     if(
         type==="INFLUENCER"
     ){
@@ -595,7 +601,6 @@ async function applyJob(
         };
 
     }
-
 
 
     try{
