@@ -176,15 +176,6 @@ async function load(){
 
 
 
-        /*
-        Handles:
-        []
-        {tasks:[]}
-        {data:[]}
-        {results:[]}
-        anything else
-        */
-
         if(
             Array.isArray(
                 data
@@ -290,7 +281,6 @@ function render(
 
 
 
-            <!-- CATEGORIES -->
             <div class="
                 grid
                 grid-cols-4
@@ -345,7 +335,6 @@ function render(
 
 
 
-        <!-- NAV -->
         <div class="
             fixed
             bottom-0
@@ -477,12 +466,88 @@ function card(
 
 
 
-function submitProof(
+async function submitProof(
     id
 ){
 
-    location =
-    "task-submit.html?id="+id;
+    const proof =
+    prompt(
+        "Paste proof link"
+    );
+
+
+    if(
+        !proof
+    ){
+        return;
+    }
+
+
+    try{
+
+        const res =
+        await fetch(
+
+            API+
+            "/api/users/submit-task",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    Authorization:
+                    "Bearer "+
+                    token,
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body:
+                JSON.stringify({
+
+                    task_id:id,
+
+                    proof:proof
+
+                })
+
+            }
+
+        );
+
+
+        if(
+            !res.ok
+        ){
+
+            alert(
+                "Submission failed"
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Proof submitted successfully"
+        );
+
+
+        load();
+
+
+    }catch(error){
+
+        alert(
+            "Connection failed"
+        );
+
+    }
 
 }
 
