@@ -4,15 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>SkillEarn Jobs</title>
+<title>Jobs</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-
-body{
-    font-family:sans-serif;
-}
 
 .nav-btn{
     transition:.25s;
@@ -22,21 +18,19 @@ body{
     transform:scale(.85);
 }
 
-.float-card{
-    animation:floatCard 3s infinite;
+.fade{
+    animation:fade .35s;
 }
 
-@keyframes floatCard{
+@keyframes fade{
 
-    0%{
-        transform:translateY(0);
+    from{
+        opacity:0;
+        transform:translateY(15px);
     }
 
-    50%{
-        transform:translateY(-3px);
-    }
-
-    100%{
+    to{
+        opacity:1;
         transform:translateY(0);
     }
 
@@ -58,11 +52,11 @@ body{
     class="
         fixed
         inset-0
-        bg-black/10
-        z-50
         flex
         items-center
         justify-center
+        bg-black/10
+        z-50
     "
 >
 
@@ -96,33 +90,20 @@ localStorage.getItem(
 );
 
 
-let user =
-{};
+const user =
+JSON.parse(
 
+    localStorage.getItem(
+        "user"
+    ) || "{}"
 
-try{
-
-    user =
-    JSON.parse(
-
-        localStorage.getItem(
-            "user"
-        ) || "{}"
-
-    );
-
-}catch{
-
-    user =
-    {};
-
-}
+);
 
 
 
 if(!token){
 
-    window.location =
+    location =
     "login.html";
 
 }
@@ -152,122 +133,109 @@ function currency(){
 
 
 
-function auth(){
-
-    return {
-
-        Authorization:
-        "Bearer "+
-        token
-
-    };
-
-}
-
-
-
-
-async function getJobs(
-    endpoint
-){
+async function load(){
 
     try{
 
-        const res =
+
+        const tasksRes =
         await fetch(
 
             API+
-            endpoint,
+            "/api/users/tasks",
 
             {
 
-                headers:
-                auth()
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
 
             }
 
         );
 
 
-        if(
-            !res.ok
-        ){
 
-            return [];
+        const freelanceRes =
+        await fetch(
 
-        }
+            API+
+            "/api/users/freelance-jobs",
 
+            {
 
-        const data =
-        await res.json();
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
 
+            }
 
-        return Array.isArray(
-            data
-        )
-
-        ?
-
-        data
-
-        :
-
-        [];
-
-
-    }catch{
-
-        return [];
-
-    }
-
-}
+        );
 
 
 
+        const hiringRes =
+        await fetch(
 
-async function load(){
+            API+
+            "/api/users/hiring-jobs",
 
-    let jobs =
-    [];
+            {
 
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
 
-    try{
+            }
 
-
-        const [
-
-            tasks,
-
-            freelance,
-
-            hiring,
-
-            influencer
-
-        ] = await Promise.all([
-
-            getJobs(
-                "/api/users/tasks"
-            ),
-
-            getJobs(
-                "/api/users/freelance-jobs"
-            ),
-
-            getJobs(
-                "/api/users/hiring-jobs"
-            ),
-
-            getJobs(
-                "/api/users/influencer-jobs"
-            )
-
-        ]);
+        );
 
 
 
-        jobs = [
+        const influencerRes =
+        await fetch(
+
+            API+
+            "/api/users/influencer-jobs",
+
+            {
+
+                headers:{
+                    Authorization:
+                    "Bearer "+
+                    token
+                }
+
+            }
+
+        );
+
+
+
+        const tasks =
+        await tasksRes.json();
+
+
+        const freelance =
+        await freelanceRes.json();
+
+
+        const hiring =
+        await hiringRes.json();
+
+
+        const influencer =
+        await influencerRes.json();
+
+
+
+        const jobs = [
 
             ...tasks.map(
                 x=>({
@@ -300,8 +268,6 @@ async function load(){
         ];
 
 
-    }finally{
-
 
         document
         .getElementById(
@@ -311,8 +277,26 @@ async function load(){
         "none";
 
 
+
         render(
             jobs
+        );
+
+
+
+    }catch(error){
+
+        document
+        .getElementById(
+            "loader"
+        )
+        .style.display =
+        "none";
+
+
+
+        render(
+            []
         );
 
     }
@@ -326,6 +310,60 @@ function render(
     jobs
 ){
 
+    let content =
+    "";
+
+
+
+    if(
+        !jobs.length
+    ){
+
+        content = `
+
+            <div class="
+                text-center
+                mt-20
+            ">
+
+                <div class="
+                    text-6xl
+                    mb-4
+                ">
+                    💼
+                </div>
+
+
+                <h3 class="
+                    text-xl
+                    font-bold
+                    mb-2
+                ">
+                    No jobs available
+                </h3>
+
+            </div>
+
+        `;
+
+    }
+
+    else{
+
+        content =
+
+        jobs.map(
+
+            x=>card(
+                x
+            )
+
+        ).join("");
+
+    }
+
+
+
     document
     .getElementById(
         "app"
@@ -333,67 +371,32 @@ function render(
     .innerHTML = `
 
         <div class="
-            pb-28
             p-4
+            pb-28
         ">
 
-
-            <!-- TOP -->
-            <div class="
+            <h1 class="
+                text-2xl
+                font-bold
                 mb-5
             ">
-
-                <p class="
-                    text-slate-500
-                ">
-                    Browse Jobs 💼
-                </p>
+                Available Jobs
+            </h1>
 
 
-                <h2 class="
-                    text-2xl
-                    font-bold
-                ">
-                    ${user.name || ""}
-                </h2>
-
-            </div>
-
-
-
-
-            ${
-
-                jobs.length
-
-                ?
-
-                jobs.map(
-                    card
-                ).join("")
-
-                :
-
-                empty()
-
-            }
-
-
-
+            ${content}
 
         </div>
 
 
 
 
-        <!-- BOTTOM NAV -->
         <div class="
             fixed
             bottom-0
             left-0
             right-0
             bg-white
-            shadow-2xl
             border-t
             grid
             grid-cols-4
@@ -402,7 +405,7 @@ function render(
         ">
 
             ${nav("🏠","dashboard.html")}
-            ${nav("💼","jobs.html")}
+            ${nav("💰","jobs.html")}
             ${nav("🔔","notifications.html")}
             ${nav("👤","profile.html")}
 
@@ -422,6 +425,7 @@ function card(
     return `
 
         <div class="
+            fade
             bg-white
             rounded-[28px]
             p-5
@@ -436,37 +440,23 @@ function card(
                 mb-3
             ">
 
-
-                <h3 class="
-                    font-bold
-                    text-lg
-                ">
-
+                <b>
                     ${job.title || "Untitled"}
+                </b>
 
-                </h3>
 
-
-                <span class="
-                    text-xs
-                    bg-blue-100
-                    text-blue-700
-                    px-3
-                    py-1
-                    rounded-full
-                ">
+                <span>
 
                     ${job.type}
 
                 </span>
 
-
             </div>
 
 
             <p class="
-                text-slate-600
-                mb-4
+                text-slate-500
+                mb-3
             ">
 
                 ${job.description || ""}
@@ -474,9 +464,8 @@ function card(
             </p>
 
 
-            <div class="
+            <b class="
                 text-blue-600
-                font-bold
             ">
 
                 ${currency()}
@@ -484,31 +473,7 @@ function card(
                     job.reward || 0
                 ).toLocaleString()}
 
-            </div>
-
-
-        </div>
-
-    ";
-
-}
-
-
-
-
-function empty(){
-
-    return `
-
-        <div class="
-            bg-white
-            rounded-[28px]
-            p-6
-            shadow
-            text-center
-        ">
-
-            No jobs available
+            </b>
 
         </div>
 
@@ -536,15 +501,4 @@ function nav(
             "
         >
 
-            ${icon}
-
-        </a>
-
-    ";
-
-}
-
-</script>
-
-</body>
-    </html>
+            
